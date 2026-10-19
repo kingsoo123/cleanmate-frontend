@@ -1,26 +1,54 @@
 @import "tailwindcss";
 
+/* Color guide: Go Clean–style lavender shell, white content, indigo accents */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #ebe8ff;
+  --foreground: #12122e;
+  --brand: #635bff;
+  --brand-dark: #1a1a3a;
+  --brand-light: #ebe8ff;
+  --accent: #635bff;
+  --muted: #6b7280;
+  --surface: #ffffff;
+  --border: #e4e4f0;
+  --secondary-surface: #f3f3f8;
+  color-scheme: light;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-brand: var(--brand);
+  --color-brand-dark: var(--brand-dark);
+  --color-brand-light: var(--brand-light);
+  --color-accent: var(--accent);
+  --color-muted: var(--muted);
+  --color-surface: var(--surface);
+  --color-border: var(--border);
+  --color-secondary-surface: var(--secondary-surface);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  color-scheme: light;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee 28s linear infinite;
 }
