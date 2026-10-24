@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useState } from "react";
 import { FormField } from "@/components/auth/form-field";
 import { PickupStatusBadge } from "@/components/business/pickups/pickup-status-badge";
+import { AuthApiError } from "@/lib/auth/api-client";
+import { createCustomerPickup } from "@/lib/customer-dashboard/customer-api";
 import type { CustomerSavedAddress } from "@/lib/customer-dashboard/customer-addresses";
 
 const timeWindows = [
@@ -24,8 +26,10 @@ export function RequestPickupForm({
   const [notes, setNotes] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submittedRef, setSubmittedRef] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
 
-  function handleSubmit(event: React.FormEvent) {
+  async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
     const nextErrors: Record<string, string> = {};
     if (!addressId) nextErrors.addressId = "Choose a pickup address.";
@@ -37,8 +41,25 @@ export function RequestPickupForm({
       return;
     }
     setErrors({});
-    const ref = `PU-${Math.floor(2200 + Math.random() * 800)}`;
-    setSubmittedRef(ref);
+    setFormError(null);
+    setPending(true);
+    try {
+      const pickup = await createCustomerPickup({
+        addressId,
+        scheduledFor: timeWindow,
+        estimatedItems: itemsDescription.trim(),
+        ...(notes.trim() ? { customerNotes: notes.trim() } : {}),
+      });
+      setSubmittedRef(pickup.reference);
+    } catch (error) {
+      setFormError(
+        error instanceof AuthApiError
+          ? error.message
+          : "Could not submit pickup request.",
+      );
+    } finally {
+      setPending(false);
+    }
   }
 
   if (submittedRef) {
@@ -87,6 +108,11 @@ export function RequestPickupForm({
         className="space-y-5 rounded-2xl border border-border bg-surface p-5 shadow-sm sm:p-6"
         noValidate
       >
+        {formError ? (
+          <p className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-800" role="alert">
+            {formError}
+          </p>
+        ) : null}
         <div className="space-y-1.5">
           <label
             htmlFor="addressId"
@@ -163,9 +189,10 @@ export function RequestPickupForm({
 
         <button
           type="submit"
-          className="flex h-11 w-full items-center justify-center rounded-full bg-brand-dark text-sm font-semibold text-white hover:opacity-90"
+          disabled={pending}
+          className="flex h-11 w-full items-center justify-center rounded-full bg-brand-dark text-sm font-semibold text-white hover:opacity-90 disabled:opacity-60"
         >
-          Submit pickup request
+          {pending ? "Submitting…" : "Submit pickup request"}
         </button>
       </form>
     </div>

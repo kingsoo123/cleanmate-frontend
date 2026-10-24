@@ -1,8 +1,5 @@
-import { PickupHistoryView } from "@/components/customer/pickups/pickup-history-view";
-import { getCustomerDashboardData } from "@/lib/customer-dashboard/get-dashboard-data";
+import { PickupHistoryClient } from "@/components/customer/pickups/pickup-history-client";
 
-export default async function PickupHistoryPage() {
-  const data = await getCustomerDashboardData();
-
-  return <PickupHistoryView pickups={data.pickupRequests} />;
+export default function CustomerPickupsPage() {
+  return <PickupHistoryClient />;
 }

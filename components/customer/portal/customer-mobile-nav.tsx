@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Suspense } from "react";
+import { isCustomerNavActive } from "@/lib/customer-dashboard/nav";
 
 const tabs = [
   { href: "/customer/dashboard", label: "Home" },
@@ -12,18 +14,37 @@ const tabs = [
 ];
 
 export function CustomerMobileNav() {
-  const pathname = usePathname();
+  return (
+    <Suspense fallback={<CustomerMobileNavFallback />}>
+      <CustomerMobileNavContent />
+    </Suspense>
+  );
+}
 
-  function isActive(href: string) {
-    if (href === "/customer/dashboard") return pathname === href;
-    return pathname === href || pathname.startsWith(`${href}/`);
-  }
+function CustomerMobileNavFallback() {
+  return (
+    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-surface/95 backdrop-blur-md lg:hidden">
+      <ul className="mx-auto flex max-w-lg justify-around px-1 pb-[env(safe-area-inset-bottom)] pt-2">
+        {tabs.map((tab) => (
+          <li key={tab.href}>
+            <span className="flex min-w-[4rem] flex-col items-center gap-0.5 px-2 py-1.5 text-[10px] font-semibold uppercase tracking-wide text-muted">
+              {tab.label}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  );
+}
+
+function CustomerMobileNavContent() {
+  const pathname = usePathname();
 
   return (
     <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-surface/95 backdrop-blur-md lg:hidden">
       <ul className="mx-auto flex max-w-lg justify-around px-1 pb-[env(safe-area-inset-bottom)] pt-2">
         {tabs.map((tab) => {
-          const active = isActive(tab.href);
+          const active = isCustomerNavActive(pathname, tab.href);
           return (
             <li key={tab.href}>
               <Link

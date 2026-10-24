@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { useMemo, useState } from "react";
+import { LogoutButton } from "@/components/auth/logout-button";
 import { formatNgn } from "@/lib/business-dashboard/format";
 import {
   getActiveRiderJob,
@@ -84,12 +84,10 @@ export function RiderDashboardView({ initialData }: { initialData: RiderDashboar
         </p>
       ) : null}
 
-      <Link
-        href="/login?role=rider"
-        className="block text-center text-sm font-medium text-brand hover:underline"
-      >
-        Switch rider account
-      </Link>
+      <LogoutButton
+        role="rider"
+        className="block w-full text-center text-sm font-semibold text-brand hover:underline"
+      />
     </div>
   );
 }

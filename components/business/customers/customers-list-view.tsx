@@ -2,8 +2,10 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { RegisterCustomerForm } from "@/components/business/customers/register-customer-form";
+import { AuthApiError } from "@/lib/auth/api-client";
+import { fetchBusinessCustomers } from "@/lib/business-dashboard/customers-api";
 import { formatNgn } from "@/lib/business-dashboard/format";
 import {
   countCustomersByFilter,
@@ -30,10 +32,40 @@ export function CustomersListView({
   const router = useRouter();
   const searchParams = useSearchParams();
   const [customers, setCustomers] = useState(initialCustomers);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(
     initialCustomers[0]?.id ?? null,
   );
+
+  useEffect(() => {
+    let cancelled = false;
+
+    (async () => {
+      setLoading(true);
+      setLoadError(null);
+      try {
+        const list = await fetchBusinessCustomers();
+        if (cancelled) return;
+        setCustomers(list);
+        setSelectedId((current) => current ?? list[0]?.id ?? null);
+      } catch (error) {
+        if (cancelled) return;
+        setLoadError(
+          error instanceof AuthApiError
+            ? error.message
+            : "Could not load customers.",
+        );
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const filter = parseCustomerListFilter(searchParams.get("filter") ?? undefined);
   const counts = useMemo(() => countCustomersByFilter(customers), [customers]);
@@ -78,6 +110,19 @@ export function CustomersListView({
         </div>
 
         <div className="space-y-4 xl:col-span-3">
+          {loadError ? (
+            <p
+              className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800"
+              role="alert"
+            >
+              {loadError}
+            </p>
+          ) : null}
+
+          {loading ? (
+            <p className="text-sm text-muted">Loading customers…</p>
+          ) : null}
+
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <input
               type="search"

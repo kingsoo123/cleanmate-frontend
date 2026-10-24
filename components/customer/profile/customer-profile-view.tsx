@@ -2,8 +2,11 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { LogoutButton } from "@/components/auth/logout-button";
 import { FormField } from "@/components/auth/form-field";
 import { PinField } from "@/components/auth/pin-field";
+import { AuthApiError } from "@/lib/auth/api-client";
+import { createCustomerAddress } from "@/lib/customer-dashboard/customer-api";
 import { isValidPin } from "@/lib/auth/validation";
 import type {
   CustomerProfile,
@@ -71,12 +74,13 @@ export function CustomerProfileView({
     setPinSaved(true);
   }
 
-  function handleAddAddress(event: React.FormEvent<HTMLFormElement>) {
+  async function handleAddAddress(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const form = event.currentTarget;
     setAddressErrors({});
     setAddressSaved(false);
 
-    const data = new FormData(event.currentTarget);
+    const data = new FormData(form);
     const label = String(data.get("label") ?? "").trim();
     const line = String(data.get("line") ?? "").trim();
 
@@ -89,12 +93,19 @@ export function CustomerProfileView({
       return;
     }
 
-    setAddresses((prev) => [
-      ...prev,
-      { id: crypto.randomUUID(), label, line },
-    ]);
-    event.currentTarget.reset();
-    setAddressSaved(true);
+    try {
+      const created = await createCustomerAddress({ label, line });
+      setAddresses((prev) => [...prev, created]);
+      form.reset();
+      setAddressSaved(true);
+    } catch (error) {
+      setAddressErrors({
+        line:
+          error instanceof AuthApiError
+            ? error.message
+            : "Could not save address.",
+      });
+    }
   }
 
   function removeAddress(id: string) {
@@ -260,12 +271,10 @@ export function CustomerProfileView({
       </section>
 
       <div className="flex flex-col gap-3 border-t border-border pt-6">
-        <Link
-          href="/login?role=customer"
-          className="inline-flex h-11 items-center justify-center rounded-full border border-border text-sm font-semibold text-foreground hover:bg-secondary-surface"
-        >
-          Sign in again
-        </Link>
+        <LogoutButton
+          role="customer"
+          className="inline-flex h-11 w-full items-center justify-center rounded-full border border-border text-sm font-semibold text-foreground hover:bg-secondary-surface"
+        />
         <Link href="/" className="text-center text-sm font-semibold text-brand hover:underline">
           Back to website
         </Link>

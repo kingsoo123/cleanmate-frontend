@@ -17,6 +17,14 @@
 /.next/
 /out/
 
+# PWA (generated on production build)
+/public/sw.js
+/public/sw.js.map
+/public/workbox-*.js
+/public/workbox-*.js.map
+/public/fallback-*.js
+/public/firebase-cloud-messaging-push-scope/firebase-messaging-sw.js
+
 # production
 /build
 
@@ -32,6 +40,7 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
 
 # vercel
 .vercel

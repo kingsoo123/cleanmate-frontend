@@ -38,9 +38,25 @@ export type NotificationLogEntry = {
 
 export type NotificationLogFilter = "all" | "sent" | "failed";
 
+export type BusinessInboxItem = {
+  id: string;
+  kind: string;
+  title: string;
+  body: string;
+  href: string;
+  createdAt: string;
+  read: boolean;
+};
+
+export type BusinessInboxSummary = {
+  unreadCount: number;
+  items: BusinessInboxItem[];
+};
+
 export type NotificationsData = {
   channelEnabled: Record<NotificationChannel, boolean>;
   events: NotificationEventConfig[];
   templates: NotificationTemplate[];
   log: NotificationLogEntry[];
+  inbox: BusinessInboxSummary;
 };

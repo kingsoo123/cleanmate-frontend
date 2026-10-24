@@ -2,10 +2,12 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
+import { AuthApiError } from "@/lib/auth/api-client";
 import { MetricCard } from "@/components/business/dashboard/metric-card";
 import { RecordPaymentForm } from "@/components/business/payments/record-payment-form";
-import { formatNgn } from "@/lib/business-dashboard/format";
+import { formatNgn, formatUpdatedAt } from "@/lib/business-dashboard/format";
+import { verifyBusinessPayment } from "@/lib/business-dashboard/payments-api";
 import {
   countPaymentsByFilter,
   filterPaymentsList,
@@ -44,16 +46,45 @@ function PaymentStatusPill({
 export function PaymentsListView({
   initialPayments,
   initialOutstanding,
+  onRefresh,
 }: {
   initialPayments: BusinessPaymentRecord[];
   initialOutstanding: OutstandingOrderForPayment[];
+  onRefresh?: () => Promise<void>;
+}) {
+  return (
+    <Suspense fallback={null}>
+      <PaymentsListViewContent
+        initialPayments={initialPayments}
+        initialOutstanding={initialOutstanding}
+        onRefresh={onRefresh}
+      />
+    </Suspense>
+  );
+}
+
+function PaymentsListViewContent({
+  initialPayments,
+  initialOutstanding,
+  onRefresh,
+}: {
+  initialPayments: BusinessPaymentRecord[];
+  initialOutstanding: OutstandingOrderForPayment[];
+  onRefresh?: () => Promise<void>;
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [payments, setPayments] = useState(initialPayments);
-  const [outstanding, setOutstanding] = useState(initialOutstanding);
+  const [payments, setPayments] = useState(initialPayments ?? []);
+  const [outstanding, setOutstanding] = useState(initialOutstanding ?? []);
+
+  useEffect(() => {
+    setPayments(initialPayments ?? []);
+    setOutstanding(initialOutstanding ?? []);
+  }, [initialPayments, initialOutstanding]);
   const [query, setQuery] = useState("");
   const [preselectedOrderId, setPreselectedOrderId] = useState<string>();
+  const [verifyError, setVerifyError] = useState<string | null>(null);
+  const [verifyingId, setVerifyingId] = useState<string | null>(null);
 
   const summary = useMemo(
     () => recomputeSummary(payments, outstanding),
@@ -94,6 +125,27 @@ export function PaymentsListView({
         })
         .filter((order) => order.outstandingNgn > 0),
     );
+    void onRefresh?.();
+  }
+
+  async function handleVerifyPayment(paymentId: string) {
+    setVerifyError(null);
+    setVerifyingId(paymentId);
+    try {
+      const updated = await verifyBusinessPayment(paymentId);
+      setPayments((prev) =>
+        prev.map((p) => (p.id === paymentId ? updated : p)),
+      );
+      await onRefresh?.();
+    } catch (err) {
+      setVerifyError(
+        err instanceof AuthApiError
+          ? err.message
+          : "Could not verify payment.",
+      );
+    } finally {
+      setVerifyingId(null);
+    }
   }
 
   return (
@@ -121,7 +173,7 @@ export function PaymentsListView({
           accent="success"
         />
         <MetricCard
-          label="This week (preview)"
+          label="This week"
           value={formatNgn(summary.receivedThisWeekNgn)}
           accent="brand"
         />
@@ -215,6 +267,15 @@ export function PaymentsListView({
         ))}
       </div>
 
+      {verifyError ? (
+        <p
+          className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800"
+          role="alert"
+        >
+          {verifyError}
+        </p>
+      ) : null}
+
       <div className="rounded-2xl border border-border bg-surface shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[720px] text-left text-sm">
@@ -253,13 +314,25 @@ export function PaymentsListView({
                     <td className="py-3 pr-4 text-foreground">{payment.customerName}</td>
                     <td className="py-3 pr-4 text-muted">{payment.method}</td>
                     <td className="py-3 pr-4">
-                      <PaymentStatusPill status={payment.status} />
+                      <div className="flex flex-col items-start gap-1">
+                        <PaymentStatusPill status={payment.status} />
+                        {payment.status === "Pending verification" ? (
+                          <button
+                            type="button"
+                            disabled={verifyingId === payment.id}
+                            onClick={() => void handleVerifyPayment(payment.id)}
+                            className="text-xs font-semibold text-brand hover:underline disabled:opacity-50"
+                          >
+                            {verifyingId === payment.id ? "Verifying…" : "Verify"}
+                          </button>
+                        ) : null}
+                      </div>
                     </td>
                     <td className="py-3 pr-4 text-right font-semibold">
                       {formatNgn(payment.amountNgn)}
                     </td>
                     <td className="px-5 py-3 text-right text-muted">
-                      {payment.recordedAt}
+                      {formatUpdatedAt(payment.recordedAt)}
                     </td>
                   </tr>
                 ))
@@ -270,8 +343,8 @@ export function PaymentsListView({
       </div>
 
       <p className="text-xs text-muted">
-        Preview ledger only. Bank transfer rows can stay pending until verified in
-        a connected payments module.
+        Customer-submitted transfers appear as pending until you verify them.
+        Payments you record here apply to the order balance immediately.
       </p>
     </div>
   );

@@ -7,10 +7,9 @@ import {
   OrderStatusBadge,
   PaymentStateBadge,
 } from "@/components/business/status-badge";
-import {
-  createWalkInOrderPreview,
-  validateNewOrderStep,
-} from "@/lib/business-dashboard/create-walk-in-order-preview";
+import { AuthApiError } from "@/lib/auth/api-client";
+import { validateNewOrderStep } from "@/lib/business-dashboard/create-walk-in-order-preview";
+import { createWalkInOrder } from "@/lib/business-dashboard/operations-api";
 import { formatNgn } from "@/lib/business-dashboard/format";
 import {
   lineItemTotal,
@@ -59,6 +58,7 @@ export function NewWalkInOrderView({
   }));
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [created, setCreated] = useState<CreatedWalkInOrderPreview | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
   const [addServiceId, setAddServiceId] = useState(services[0]?.id ?? "");
@@ -118,7 +118,7 @@ export function NewWalkInOrderView({
     patch({ lineItems: draft.lineItems.filter((item) => item.id !== id) });
   }
 
-  function handleCreate() {
+  async function handleCreate() {
     const nextErrors = validateNewOrderStep(3, draft);
     if (Object.keys(nextErrors).length) {
       setErrors(nextErrors);
@@ -126,9 +126,19 @@ export function NewWalkInOrderView({
     }
     setPending(true);
     setErrors({});
-    const result = createWalkInOrderPreview(draft, customers);
-    setCreated(result);
-    setPending(false);
+    setFormError(null);
+    try {
+      const result = await createWalkInOrder(draft);
+      setCreated(result);
+    } catch (error) {
+      setFormError(
+        error instanceof AuthApiError
+          ? error.message
+          : "Could not create order. Try again.",
+      );
+    } finally {
+      setPending(false);
+    }
   }
 
   if (created) {
@@ -164,6 +174,14 @@ export function NewWalkInOrderView({
       <StepIndicator current={step} />
 
       <div className="rounded-2xl border border-border bg-surface p-5 shadow-sm sm:p-6">
+        {formError ? (
+          <p
+            className="mb-4 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800"
+            role="alert"
+          >
+            {formError}
+          </p>
+        ) : null}
         {step === 0 ? (
           <CustomerStep
             draft={draft}

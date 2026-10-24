@@ -2,7 +2,12 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { AuthApiError } from "@/lib/auth/api-client";
+import {
+  fetchBusinessPickups,
+  updateBusinessPickup,
+} from "@/lib/business-dashboard/operations-api";
 import { PickupStatusBadge } from "@/components/business/pickups/pickup-status-badge";
 import {
   countPickupsByFilter,
@@ -33,11 +38,38 @@ export function PickupsListView({
   const router = useRouter();
   const searchParams = useSearchParams();
   const [pickups, setPickups] = useState(initialPickups);
+  const [ridersList, setRidersList] = useState(riders);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(
     initialPickups[0]?.id ?? null,
   );
   const [assignRiderId, setAssignRiderId] = useState(riders[0]?.id ?? "");
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const data = await fetchBusinessPickups();
+        if (cancelled) return;
+        setPickups(data.pickups);
+        setRidersList(data.riders);
+        setSelectedId((current) => current ?? data.pickups[0]?.id ?? null);
+        setAssignRiderId((current) => current || data.riders[0]?.id || "");
+      } catch (err) {
+        if (!cancelled) {
+          setLoadError(
+            err instanceof AuthApiError
+              ? err.message
+              : "Could not load pickups.",
+          );
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const filter = parsePickupListFilter(searchParams.get("filter") ?? undefined);
   const counts = useMemo(() => countPickupsByFilter(pickups), [pickups]);
@@ -75,15 +107,24 @@ export function PickupsListView({
     );
   }
 
-  function runAction(
+  async function runAction(
     pickup: BusinessPickupRequest,
     action: Parameters<typeof nextStatusAfterAction>[1],
     extra?: Partial<BusinessPickupRequest>,
   ) {
-    updatePickup(pickup.id, {
-      status: nextStatusAfterAction(pickup.status, action),
-      ...extra,
-    });
+    try {
+      const updated = await updateBusinessPickup(pickup.id, {
+        action,
+        assignedRiderId: extra?.assignedRiderId ?? undefined,
+      });
+      updatePickup(pickup.id, updated);
+    } catch (err) {
+      setLoadError(
+        err instanceof AuthApiError
+          ? err.message
+          : "Could not update pickup.",
+      );
+    }
   }
 
   return (
@@ -102,6 +143,12 @@ export function PickupsListView({
           Manage riders
         </Link>
       </div>
+
+      {loadError ? (
+        <p className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800" role="alert">
+          {loadError}
+        </p>
+      ) : null}
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <input
@@ -227,13 +274,13 @@ export function PickupsListView({
           {selected ? (
             <PickupDetailPanel
               pickup={selected}
-              riders={riders}
+              riders={ridersList}
               assignRiderId={assignRiderId}
               onAssignRiderIdChange={setAssignRiderId}
               onAccept={() => runAction(selected, "accept")}
               onDecline={() => runAction(selected, "decline")}
               onAssign={() => {
-                const rider = riders.find((r) => r.id === assignRiderId);
+                const rider = ridersList.find((r) => r.id === assignRiderId);
                 if (!rider) return;
                 runAction(selected, "assign", {
                   assignedRiderId: rider.id,
@@ -243,11 +290,7 @@ export function PickupsListView({
               onEnRoute={() => runAction(selected, "en_route")}
               onCollected={() => runAction(selected, "collected")}
               onReceived={() => runAction(selected, "received")}
-              onConvert={() =>
-                runAction(selected, "convert", {
-                  linkedOrderNumber: `LD-${Math.floor(10000 + Math.random() * 90000)}`,
-                })
-              }
+              onConvert={() => runAction(selected, "convert")}
             />
           ) : (
             <div className="rounded-2xl border border-dashed border-border bg-surface/80 p-8 text-center text-sm text-muted">

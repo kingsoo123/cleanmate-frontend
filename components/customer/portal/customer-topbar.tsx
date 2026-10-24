@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { LogoutButton } from "@/components/auth/logout-button";
+import { CustomerNotificationBell } from "@/components/customer/portal/customer-notification-bell";
 
 export function CustomerTopbar({
   title,
@@ -32,12 +34,19 @@ export function CustomerTopbar({
           <p className="truncate text-xs text-muted">{customerName}</p>
         </div>
       </div>
-      <Link
-        href="/customer/pickups/new"
-        className="rounded-full bg-brand-dark px-4 py-2 text-xs font-semibold text-white hover:opacity-90 sm:text-sm"
-      >
-        Request pickup
-      </Link>
+      <div className="flex shrink-0 items-center gap-2">
+        <CustomerNotificationBell />
+        <LogoutButton
+          role="customer"
+          className="hidden rounded-full border border-border px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-secondary-surface sm:inline-flex"
+        />
+        <Link
+          href="/customer/pickups/new"
+          className="rounded-full bg-brand-dark px-4 py-2 text-xs font-semibold text-white hover:opacity-90 sm:text-sm"
+        >
+          Request pickup
+        </Link>
+      </div>
     </header>
   );
 }

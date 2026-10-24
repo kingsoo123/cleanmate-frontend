@@ -11,6 +11,7 @@ export const businessNav: BusinessNavItem[] = [
   { label: "Pickup requests", href: "/business/pickups" },
   { label: "Deliveries", href: "/business/deliveries" },
   { label: "Customers", href: "/business/customers" },
+  { label: "Messages", href: "/business/messages" },
   { label: "Services & pricing", href: "/business/services" },
   { label: "Payments", href: "/business/payments" },
   { label: "Staff & riders", href: "/business/staff" },
@@ -26,6 +27,7 @@ export function getBusinessNavTitle(pathname: string): string {
   if (pathname.startsWith("/business/reports")) return "Reports";
   if (pathname.startsWith("/business/payments")) return "Payments";
   if (pathname.startsWith("/business/customers")) return "Customers";
+  if (pathname.startsWith("/business/messages")) return "Messages";
   if (pathname.startsWith("/business/deliveries")) return "Deliveries";
   if (pathname.startsWith("/business/pickups")) return "Pickup requests";
   if (pathname.startsWith("/business/orders/new")) return "New order";

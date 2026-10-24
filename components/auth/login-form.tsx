@@ -6,8 +6,10 @@ import { useState } from "react";
 import { FormField } from "@/components/auth/form-field";
 import { PinField } from "@/components/auth/pin-field";
 import type { OnboardingRole } from "@/lib/auth/onboarding";
-import { loginDestinations } from "@/lib/auth/onboarding";
+import { AuthApiError, signIn } from "@/lib/auth/api-client";
 import { AUTH_BACKEND_ENABLED } from "@/lib/auth/dev-bypass";
+import { loginDestinations } from "@/lib/auth/onboarding";
+import { saveAuthSession } from "@/lib/auth/session";
 import { isValidPin, validatePhoneOrEmail } from "@/lib/auth/validation";
 
 type FieldErrors = Partial<Record<string, string>>;
@@ -42,6 +44,7 @@ function validateLogin(data: FormData, role: OnboardingRole): FieldErrors | null
 export function LoginForm({ role }: { role: OnboardingRole }) {
   const router = useRouter();
   const [errors, setErrors] = useState<FieldErrors>({});
+  const [formError, setFormError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
   const identifierLabel =
@@ -55,8 +58,10 @@ export function LoginForm({ role }: { role: OnboardingRole }) {
     event.preventDefault();
     setPending(true);
     setErrors({});
+    setFormError(null);
 
-    const validation = validateLogin(new FormData(event.currentTarget), role);
+    const data = new FormData(event.currentTarget);
+    const validation = validateLogin(data, role);
 
     if (validation) {
       setErrors(validation);
@@ -64,8 +69,27 @@ export function LoginForm({ role }: { role: OnboardingRole }) {
       return;
     }
 
-    await new Promise((resolve) => setTimeout(resolve, 200));
-    router.push(loginDestinations[role]);
+    if (!AUTH_BACKEND_ENABLED) {
+      router.push(loginDestinations[role]);
+      setPending(false);
+      return;
+    }
+
+    try {
+      const identifier = String(data.get("identifier") ?? "");
+      const pin = String(data.get("pin") ?? "");
+      const result = await signIn({ identifier, pin, role });
+      saveAuthSession(result.accessToken, result.user);
+      router.push(loginDestinations[role]);
+    } catch (error) {
+      setFormError(
+        error instanceof AuthApiError
+          ? error.message
+          : "Sign in failed. Please try again.",
+      );
+    } finally {
+      setPending(false);
+    }
   }
 
   return (
@@ -74,6 +98,15 @@ export function LoginForm({ role }: { role: OnboardingRole }) {
         <p className="rounded-xl border border-brand/20 bg-brand-light/50 px-3 py-2.5 text-xs leading-relaxed text-muted">
           Development mode: you can sign in with empty fields until the backend
           is connected.
+        </p>
+      ) : null}
+
+      {formError ? (
+        <p
+          className="rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-xs text-red-700"
+          role="alert"
+        >
+          {formError}
         </p>
       ) : null}
 
@@ -103,7 +136,7 @@ export function LoginForm({ role }: { role: OnboardingRole }) {
 
       <div className="flex justify-end">
         <Link
-          href="/forgot-password"
+          href={`/forgot-password?role=${role}`}
           className="text-sm font-medium text-brand hover:underline"
         >
           Forgot PIN?

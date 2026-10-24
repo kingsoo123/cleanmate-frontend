@@ -1,9 +1,6 @@
 import type { BusinessDashboardData } from "@/lib/business-dashboard/types";
 
-/**
- * Dashboard metrics source. Replace this module with database/API queries in Phase 1.
- * Preview data illustrates layout only; `isPreviewData` is shown in the UI until live.
- */
+/** @deprecated Use fetchBusinessDashboard() from dashboard-api.ts */
 export async function getBusinessDashboardData(): Promise<BusinessDashboardData> {
   return {
     businessName: "Sunbright Laundry & Dry Clean",

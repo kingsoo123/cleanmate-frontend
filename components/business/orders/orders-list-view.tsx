@@ -7,7 +7,11 @@ import {
   OrderStatusBadge,
   PaymentStateBadge,
 } from "@/components/business/status-badge";
-import { formatNgn } from "@/lib/business-dashboard/format";
+import {
+  formatNgn,
+  formatUpdatedAt,
+  formatUpdatedAtTitle,
+} from "@/lib/business-dashboard/format";
 import {
   countOrdersByFilter,
   filterOrdersList,
@@ -204,6 +208,7 @@ export function OrdersListView({
                 <thead>
                   <tr className="border-b border-border text-xs uppercase tracking-wide text-muted">
                     <th className="px-5 pb-3 pt-4 font-medium">Order</th>
+                    <th className="pb-3 pr-4 font-medium">Tag</th>
                     <th className="pb-3 pr-4 font-medium">Customer</th>
                     <th className="pb-3 pr-4 font-medium">Source</th>
                     <th className="pb-3 pr-4 font-medium">Stage</th>
@@ -232,6 +237,9 @@ export function OrdersListView({
                           {order.itemsSummary}
                         </p>
                       </td>
+                      <td className="py-3.5 pr-4 font-mono text-xs font-semibold text-brand">
+                        {order.tag ?? order.trackingCode ?? "—"}
+                      </td>
                       <td className="py-3.5 pr-4">
                         <p className="font-medium text-foreground">
                           {order.customerName}
@@ -258,8 +266,11 @@ export function OrdersListView({
                       <td className="py-3.5 pr-4 text-right font-medium">
                         {formatNgn(order.totalNgn)}
                       </td>
-                      <td className="px-5 py-3.5 text-right text-muted">
-                        {order.updatedAt}
+                      <td
+                        className="px-5 py-3.5 text-right text-muted"
+                        title={formatUpdatedAtTitle(order.updatedAt)}
+                      >
+                        {formatUpdatedAt(order.updatedAt)}
                       </td>
                     </tr>
                   ))}
@@ -335,6 +346,9 @@ function OrderCard({ order }: { order: BusinessOrderListRow }) {
         </p>
         <OrderStatusBadge status={order.status} />
       </div>
+      <p className="mt-1 font-mono text-xs font-semibold text-brand">
+        Tag {order.tag ?? order.trackingCode ?? "—"}
+      </p>
       <p className="mt-1 font-medium text-foreground">{order.customerName}</p>
       <p className="text-xs text-muted">
         {order.source} · {order.processingStage}

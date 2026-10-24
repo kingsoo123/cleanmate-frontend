@@ -5,6 +5,8 @@ export type OrderSource = "Walk-in" | "Pickup";
 export type BusinessOrderListRow = {
   id: string;
   orderNumber: string;
+  tag: string | null;
+  trackingCode: string | null;
   customerName: string;
   customerPhone: string;
   source: OrderSource;

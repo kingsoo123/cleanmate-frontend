@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { LogoutButton } from "@/components/auth/logout-button";
+import { useBusinessBrand } from "@/components/business/portal/business-brand-provider";
 import { businessNav } from "@/lib/business-dashboard/nav";
 
 function NavIcon({ href }: { href: string }) {
@@ -42,6 +44,7 @@ export function BusinessSidebar({
   onClose: () => void;
 }) {
   const pathname = usePathname();
+  const brand = useBusinessBrand();
 
   function isActive(href: string) {
     if (pathname === href) return true;
@@ -93,16 +96,29 @@ export function BusinessSidebar({
         }`}
       >
         <div className="flex h-16 items-center gap-2 border-b border-border px-4">
-          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-light text-xs font-bold text-brand">
-            CM
+          <span
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-light text-xs font-bold text-brand"
+            aria-hidden
+          >
+            {brand.businessInitials}
           </span>
           <div className="min-w-0">
-            <p className="truncate text-sm font-semibold text-foreground">CleanMate</p>
-            <p className="truncate text-xs text-muted">Business portal</p>
+            <p className="truncate text-sm font-semibold text-foreground">
+              {brand.businessName}
+            </p>
+            <p className="truncate text-xs text-muted">
+              {brand.isFromSession && brand.ownerName
+                ? brand.ownerName
+                : "CleanMate business portal"}
+            </p>
           </div>
         </div>
         {nav}
-        <div className="border-t border-border p-4">
+        <div className="flex flex-col gap-2 border-t border-border p-4">
+          <LogoutButton
+            role="business"
+            className="w-full rounded-lg py-2 text-left text-xs font-semibold text-foreground hover:text-brand"
+          />
           <Link
             href="/"
             className="text-xs font-medium text-muted hover:text-brand"

@@ -3,7 +3,7 @@ import {
   OrderStatusBadge,
   PaymentStateBadge,
 } from "@/components/business/status-badge";
-import { formatNgn } from "@/lib/business-dashboard/format";
+import { formatNgn, formatUpdatedAt } from "@/lib/business-dashboard/format";
 import type { BusinessOrderListRow } from "@/lib/business-dashboard/orders-types";
 
 export function OrderDetailView({
@@ -24,8 +24,14 @@ export function OrderDetailView({
         </Link>
         <div className="mt-4 flex flex-wrap items-start justify-between gap-3">
           <div>
-            <p className="font-mono text-sm font-semibold text-brand">
-              {order.orderNumber}
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted">
+              Tag
+            </p>
+            <p className="font-mono text-base font-bold text-brand">
+              {order.tag ?? order.trackingCode ?? "—"}
+            </p>
+            <p className="font-mono text-sm font-semibold text-muted">
+              Ref {order.orderNumber}
             </p>
             <h2 className="mt-1 text-2xl font-bold text-foreground">
               {order.customerName}
@@ -52,8 +58,14 @@ export function OrderDetailView({
           <DetailItem label="Source" value={order.source} />
           <DetailItem label="Processing stage" value={order.processingStage} />
           <DetailItem label="Items" value={order.itemsSummary} />
-          <DetailItem label="Created" value={order.createdAt} />
-          <DetailItem label="Last updated" value={order.updatedAt} />
+          <DetailItem
+            label="Created"
+            value={formatUpdatedAt(order.createdAt)}
+          />
+          <DetailItem
+            label="Last updated"
+            value={formatUpdatedAt(order.updatedAt)}
+          />
           <DetailItem label="Order total" value={formatNgn(order.totalNgn)} />
           <DetailItem
             label="Outstanding"

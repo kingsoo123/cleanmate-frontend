@@ -4,11 +4,11 @@ import type {
 } from "@/lib/business-dashboard/customers-types";
 import type { PreviewCustomer } from "@/lib/business-dashboard/new-order-types";
 
-/** Replace with API/DB when customer CRM is connected. */
+/** Server placeholder; live list loads in the client with the business JWT. */
 export async function getBusinessCustomersData(): Promise<{
   customers: BusinessCustomer[];
 }> {
-  return { customers: previewCustomers };
+  return { customers: [] };
 }
 
 export function getCustomersCatalogSlice(
@@ -20,113 +20,6 @@ export function getCustomersCatalogSlice(
     phone: c.phone,
   }));
 }
-
-const previewCustomers: BusinessCustomer[] = [
-  {
-    id: "c1",
-    name: "Ada Okonkwo",
-    phone: "+234 803 222 3344",
-    email: "ada.o@email.com",
-    registeredAt: "Aug 2026",
-    totalOrders: 24,
-    activeOrders: 2,
-    outstandingNgn: 15_000,
-    lastActivity: "Today",
-    portalAccess: true,
-    defaultAddress: "12 Admiralty Way, Lekki Phase 1",
-  },
-  {
-    id: "c2",
-    name: "Tunde Bakare",
-    phone: "+234 807 555 6677",
-    email: null,
-    registeredAt: "Sep 2026",
-    totalOrders: 11,
-    activeOrders: 1,
-    outstandingNgn: 8_500,
-    lastActivity: "Today",
-    portalAccess: true,
-    defaultAddress: null,
-  },
-  {
-    id: "c3",
-    name: "Fatima Yusuf",
-    phone: "+234 701 888 9900",
-    email: "fatima.y@gmail.com",
-    registeredAt: "Jul 2026",
-    totalOrders: 18,
-    activeOrders: 1,
-    outstandingNgn: 0,
-    lastActivity: "Today",
-    portalAccess: true,
-    defaultAddress: "VI — Ozumba Mbadiwe",
-  },
-  {
-    id: "c4",
-    name: "James Okafor",
-    phone: "+234 809 123 4567",
-    email: null,
-    registeredAt: "Jun 2026",
-    totalOrders: 9,
-    activeOrders: 1,
-    outstandingNgn: 0,
-    lastActivity: "Today",
-    portalAccess: true,
-    defaultAddress: "18 Bourdillon Road, Ikoyi",
-  },
-  {
-    id: "c5",
-    name: "Blessing Adeyemi",
-    phone: "+234 816 444 2211",
-    email: "blessing.a@corp.ng",
-    registeredAt: "Oct 2026",
-    totalOrders: 6,
-    activeOrders: 2,
-    outstandingNgn: 70_500,
-    lastActivity: "Yesterday",
-    portalAccess: true,
-    defaultAddress: "15 Ozumba Mbadiwe, VI",
-  },
-  {
-    id: "c6",
-    name: "Chidi Nwosu",
-    phone: "+234 802 333 7788",
-    email: null,
-    registeredAt: "Sep 2026",
-    totalOrders: 4,
-    activeOrders: 1,
-    outstandingNgn: 32_500,
-    lastActivity: "Yesterday",
-    portalAccess: true,
-    defaultAddress: null,
-  },
-  {
-    id: "c7",
-    name: "Helen Chu",
-    phone: "+234 805 999 1122",
-    email: null,
-    registeredAt: "May 2026",
-    totalOrders: 15,
-    activeOrders: 0,
-    outstandingNgn: 0,
-    lastActivity: "3 days ago",
-    portalAccess: true,
-    defaultAddress: "Banana Island",
-  },
-  {
-    id: "c8",
-    name: "Grace Eze",
-    phone: "+234 818 777 6655",
-    email: null,
-    registeredAt: "Oct 2026",
-    totalOrders: 2,
-    activeOrders: 1,
-    outstandingNgn: 12_000,
-    lastActivity: "Today",
-    portalAccess: true,
-    defaultAddress: "Chevron Drive, Lekki",
-  },
-];
 
 export function parseCustomerListFilter(
   value: string | undefined,

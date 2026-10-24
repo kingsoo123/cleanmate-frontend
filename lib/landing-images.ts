@@ -4,8 +4,8 @@ export const landingImages = {
     alt: "Fresh laundry in warm golden sunlight",
   },
   heroAccent: {
-    src: "/images/hero-laundry.jpg",
-    alt: "Person carrying a laundry basket",
+    src: "/images/machines.jpg",
+    alt: "Commercial laundry machines at a professional facility",
   },
   business: {
     src: "/images/business-team.jpg",

@@ -2,11 +2,13 @@
 
 import { useState } from "react";
 import { FormField } from "@/components/auth/form-field";
+import { AuthApiError } from "@/lib/auth/api-client";
 import { formatNgn } from "@/lib/business-dashboard/format";
+import { submitCustomerPayment } from "@/lib/customer-dashboard/payments-api";
 import type {
   CustomerOutstandingBalance,
   LaundryTransferDetails,
-} from "@/lib/customer-dashboard/customer-payments-preview";
+} from "@/lib/customer-dashboard/payments-types";
 import type { CustomerPaymentRow } from "@/lib/customer-dashboard/types";
 
 export type CustomerPayMethod = "bank_transfer" | "pay_at_shop";
@@ -46,6 +48,7 @@ export function CustomerPayBalanceForm({
   const [transferRef, setTransferRef] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const selected = outstanding.find((b) => b.orderId === orderId);
 
@@ -56,7 +59,7 @@ export function CustomerPayBalanceForm({
     setAmount(balance ? String(balance.outstandingNgn) : "");
   }
 
-  function handleSubmit(event: React.FormEvent) {
+  async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
     setError(null);
     setSubmitted(false);
@@ -80,18 +83,30 @@ export function CustomerPayBalanceForm({
       return;
     }
 
-    const payment: CustomerPaymentRow = {
-      id: crypto.randomUUID(),
-      orderNumber: selected.orderNumber,
-      amountNgn,
-      method: method === "bank_transfer" ? "Bank transfer" : "Pay at shop",
-      status: method === "bank_transfer" ? "Pending" : "Pending",
-      paidAt: "Just now",
-    };
+    const methodLabel =
+      method === "bank_transfer" ? "Bank transfer" : "Pay at shop";
 
-    onPaymentSubmitted(payment);
-    setSubmitted(true);
-    setTransferRef("");
+    setSubmitting(true);
+    try {
+      const payment = await submitCustomerPayment({
+        orderId: selected.orderId,
+        amountNgn,
+        method: methodLabel,
+        transferReference:
+          method === "bank_transfer" ? transferRef.trim() : undefined,
+      });
+      onPaymentSubmitted(payment);
+      setSubmitted(true);
+      setTransferRef("");
+    } catch (err) {
+      setError(
+        err instanceof AuthApiError
+          ? err.message
+          : "Could not submit payment.",
+      );
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   if (outstanding.length === 0) {
@@ -118,8 +133,8 @@ export function CustomerPayBalanceForm({
           className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-900"
           role="status"
         >
-          Payment submitted (preview). It will show as Pending until your laundry
-          verifies it.
+          Payment submitted. It will show as Pending until your laundry verifies
+          it.
         </p>
       ) : null}
 
@@ -224,9 +239,10 @@ export function CustomerPayBalanceForm({
 
         <button
           type="submit"
-          className="flex h-11 w-full items-center justify-center rounded-full bg-brand-dark text-sm font-semibold text-white hover:opacity-90"
+          disabled={submitting}
+          className="flex h-11 w-full items-center justify-center rounded-full bg-brand-dark text-sm font-semibold text-white hover:opacity-90 disabled:opacity-60"
         >
-          Submit payment
+          {submitting ? "Submitting…" : "Submit payment"}
         </button>
       </form>
     </div>

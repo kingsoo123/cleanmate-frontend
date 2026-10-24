@@ -31,6 +31,7 @@ export type ProcessingStageCount = {
 export type RecentOrderRow = {
   id: string;
   orderNumber: string;
+  tag: string | null;
   customerName: string;
   source: "Walk-in" | "Pickup";
   status: OrderStatus;
@@ -57,11 +58,17 @@ export type PaymentRow = {
   recordedAt: string;
 };
 
+export type MetricTrend = {
+  direction: "up" | "down" | "neutral";
+  text: string;
+};
+
 export type FinancialMetrics = {
   revenueTodayNgn: number;
   paymentsReceivedNgn: number;
   outstandingBalancesNgn: number;
   orderValueThisWeekNgn: number;
+  paymentsTrend?: MetricTrend;
 };
 
 export type OperationalMetrics = {

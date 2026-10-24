@@ -1,8 +1,5 @@
-import { DashboardView } from "@/components/business/dashboard/dashboard-view";
-import { getBusinessDashboardData } from "@/lib/business-dashboard/get-dashboard-data";
+import { BusinessDashboardClient } from "@/components/business/dashboard/business-dashboard-client";
 
-export default async function BusinessDashboardPage() {
-  const data = await getBusinessDashboardData();
-
-  return <DashboardView data={data} />;
+export default function BusinessDashboardPage() {
+  return <BusinessDashboardClient />;
 }

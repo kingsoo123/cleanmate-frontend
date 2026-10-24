@@ -5,18 +5,12 @@ import type {
   PickupRequestStatus,
 } from "@/lib/business-dashboard/pickups-types";
 
-/** Replace with API/DB when pickup workflow is connected. */
+/** Server placeholder; client loads via JWT. */
 export async function getBusinessPickupsData(): Promise<{
   pickups: BusinessPickupRequest[];
   riders: PickupAssignRider[];
 }> {
-  return {
-    riders: [
-      { id: "r1", fullName: "Emeka Duru", status: "On job" },
-      { id: "r2", fullName: "Samuel Kola", status: "Active" },
-    ],
-    pickups: previewPickups,
-  };
+  return { pickups: [], riders: [] };
 }
 
 const previewPickups: BusinessPickupRequest[] = [

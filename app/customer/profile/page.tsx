@@ -1,13 +1,5 @@
-import { CustomerProfileView } from "@/components/customer/profile/customer-profile-view";
-import { getCustomerProfileData } from "@/lib/customer-dashboard/get-profile-data";
+import { CustomerProfileClient } from "@/components/customer/profile/customer-profile-client";
 
-export default async function CustomerProfilePage() {
-  const { profile, addresses } = await getCustomerProfileData();
-
-  return (
-    <CustomerProfileView
-      initialProfile={profile}
-      initialAddresses={addresses}
-    />
-  );
+export default function CustomerProfilePage() {
+  return <CustomerProfileClient />;
 }

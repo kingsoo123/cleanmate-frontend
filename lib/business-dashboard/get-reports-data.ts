@@ -93,7 +93,7 @@ const snapshots: Record<ReportPeriod, ReportsSnapshot> = {
   },
 };
 
-/** Replace with aggregated API/DB queries when reporting is connected. */
+/** @deprecated Use fetchBusinessReports() from reports-api.ts */
 export async function getBusinessReportsData(
   period: ReportPeriod = "today",
 ): Promise<ReportsSnapshot> {

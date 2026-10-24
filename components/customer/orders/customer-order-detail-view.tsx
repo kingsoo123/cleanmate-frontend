@@ -6,7 +6,7 @@ import {
   OrderStatusBadge,
   PaymentStateBadge,
 } from "@/components/business/status-badge";
-import { formatNgn } from "@/lib/business-dashboard/format";
+import { formatNgn, formatUpdatedAt } from "@/lib/business-dashboard/format";
 import type { CustomerOrderRow } from "@/lib/customer-dashboard/types";
 import type { OrderStatus } from "@/lib/business-dashboard/types";
 
@@ -32,8 +32,14 @@ export function CustomerOrderDetailView({ order }: { order: CustomerOrderRow }) 
       </Link>
 
       <div>
-        <p className="font-mono text-sm font-semibold text-brand">
-          {order.orderNumber}
+        <p className="text-xs font-semibold uppercase tracking-wide text-muted">
+          Tag
+        </p>
+        <p className="font-mono text-base font-bold tracking-wide text-brand">
+          {order.tag || order.trackingCode || "—"}
+        </p>
+        <p className="font-mono text-sm font-semibold text-muted">
+          Ref {order.orderNumber}
         </p>
         <h2 className="mt-1 text-2xl font-bold text-foreground">
           {order.laundryName}
@@ -49,7 +55,9 @@ export function CustomerOrderDetailView({ order }: { order: CustomerOrderRow }) 
         <p className="mt-2 text-lg font-medium text-foreground">
           {order.processingStage}
         </p>
-        <p className="mt-1 text-sm text-muted">{order.updatedAt}</p>
+        <p className="mt-1 text-sm text-muted">
+          Updated {formatUpdatedAt(order.updatedAt)}
+        </p>
         <dl className="mt-5 grid grid-cols-2 gap-4 text-sm">
           <div>
             <dt className="text-xs font-semibold uppercase tracking-wide text-muted">

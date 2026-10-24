@@ -2,19 +2,19 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useMemo, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
 import { CustomerPayBalanceForm } from "@/components/customer/payments/customer-pay-balance-form";
-import { formatNgn } from "@/lib/business-dashboard/format";
-import type {
-  CustomerOutstandingBalance,
-  LaundryTransferDetails,
-} from "@/lib/customer-dashboard/customer-payments-preview";
+import { formatNgn, formatUpdatedAt } from "@/lib/business-dashboard/format";
 import {
   countCustomerPaymentHistoryFilters,
   filterCustomerPaymentHistory,
   parseCustomerPaymentHistoryFilter,
 } from "@/lib/customer-dashboard/get-payments-data";
 import type { CustomerPaymentHistoryFilter } from "@/lib/customer-dashboard/get-payments-data";
+import type {
+  CustomerOutstandingBalance,
+  LaundryTransferDetails,
+} from "@/lib/customer-dashboard/payments-types";
 import type { CustomerPaymentRow } from "@/lib/customer-dashboard/types";
 
 const historyFilters: { id: CustomerPaymentHistoryFilter; label: string }[] = [
@@ -36,33 +36,11 @@ export function CustomerPaymentsView({
   initialHistory: CustomerPaymentRow[];
   preselectedOrderId?: string;
 }) {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const outstanding = initialOutstanding;
-  const totalOutstanding = initialTotalOutstandingNgn;
+  const [outstanding, setOutstanding] = useState(initialOutstanding);
+  const [totalOutstanding, setTotalOutstanding] = useState(
+    initialTotalOutstandingNgn,
+  );
   const [history, setHistory] = useState(initialHistory);
-
-  const historyFilter = parseCustomerPaymentHistoryFilter(
-    searchParams.get("filter") ?? undefined,
-  );
-  const historyCounts = useMemo(
-    () => countCustomerPaymentHistoryFilters(history),
-    [history],
-  );
-  const filteredHistory = useMemo(
-    () => filterCustomerPaymentHistory(history, historyFilter),
-    [history, historyFilter],
-  );
-
-  function setHistoryFilter(next: CustomerPaymentHistoryFilter) {
-    const params = new URLSearchParams(searchParams.toString());
-    if (next === "all") params.delete("filter");
-    else params.set("filter", next);
-    const qs = params.toString();
-    router.replace(qs ? `/customer/payments?${qs}` : "/customer/payments", {
-      scroll: false,
-    });
-  }
 
   function handlePaymentSubmitted(payment: CustomerPaymentRow) {
     setHistory((prev) => [payment, ...prev]);
@@ -113,53 +91,14 @@ export function CustomerPaymentsView({
         outstanding={outstanding}
         transferDetails={transferDetails}
         preselectedOrderId={preselectedOrderId}
-        onPaymentSubmitted={handlePaymentSubmitted}
+        onPaymentSubmitted={(payment) => {
+          handlePaymentSubmitted(payment);
+        }}
       />
 
-      <section className="space-y-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <h3 className="text-lg font-semibold text-foreground">Payment history</h3>
-          <div className="flex gap-2">
-            {historyFilters.map((f) => (
-              <button
-                key={f.id}
-                type="button"
-                onClick={() => setHistoryFilter(f.id)}
-                className={`rounded-full px-3 py-1.5 text-xs font-semibold ${
-                  historyFilter === f.id
-                    ? "bg-brand text-white"
-                    : "border border-border bg-surface text-muted"
-                }`}
-              >
-                {f.label} ({historyCounts[f.id]})
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <ul className="divide-y divide-border rounded-2xl border border-border bg-surface shadow-sm">
-          {filteredHistory.length === 0 ? (
-            <li className="px-5 py-10 text-center text-sm text-muted">
-              No payments in this view.
-            </li>
-          ) : (
-            filteredHistory.map((payment) => (
-              <li key={payment.id} className="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
-                <div>
-                  <p className="text-sm font-semibold text-foreground">
-                    {formatNgn(payment.amountNgn)}
-                  </p>
-                  <p className="text-xs text-muted">
-                    {payment.orderNumber} · {payment.method}
-                  </p>
-                  <p className="text-xs text-muted">{payment.paidAt}</p>
-                </div>
-                <PaymentStatusPill status={payment.status} />
-              </li>
-            ))
-          )}
-        </ul>
-      </section>
+      <Suspense fallback={null}>
+        <PaymentHistorySection history={history} />
+      </Suspense>
 
       <Link
         href="/customer/orders"
@@ -168,6 +107,85 @@ export function CustomerPaymentsView({
         ← Back to my orders
       </Link>
     </div>
+  );
+}
+
+function PaymentHistorySection({ history }: { history: CustomerPaymentRow[] }) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const historyFilter = parseCustomerPaymentHistoryFilter(
+    searchParams.get("filter") ?? undefined,
+  );
+  const historyCounts = useMemo(
+    () => countCustomerPaymentHistoryFilters(history),
+    [history],
+  );
+  const filteredHistory = useMemo(
+    () => filterCustomerPaymentHistory(history, historyFilter),
+    [history, historyFilter],
+  );
+
+  function setHistoryFilter(next: CustomerPaymentHistoryFilter) {
+    const params = new URLSearchParams(searchParams.toString());
+    if (next === "all") params.delete("filter");
+    else params.set("filter", next);
+    const qs = params.toString();
+    router.replace(qs ? `/customer/payments?${qs}` : "/customer/payments", {
+      scroll: false,
+    });
+  }
+
+  return (
+    <section className="space-y-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <h3 className="text-lg font-semibold text-foreground">Payment history</h3>
+        <div className="flex gap-2">
+          {historyFilters.map((f) => (
+            <button
+              key={f.id}
+              type="button"
+              onClick={() => setHistoryFilter(f.id)}
+              className={`rounded-full px-3 py-1.5 text-xs font-semibold ${
+                historyFilter === f.id
+                  ? "bg-brand text-white"
+                  : "border border-border bg-surface text-muted"
+              }`}
+            >
+              {f.label} ({historyCounts[f.id]})
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <ul className="divide-y divide-border rounded-2xl border border-border bg-surface shadow-sm">
+        {filteredHistory.length === 0 ? (
+          <li className="px-5 py-10 text-center text-sm text-muted">
+            No payments in this view.
+          </li>
+        ) : (
+          filteredHistory.map((payment) => (
+            <li
+              key={payment.id}
+              className="flex flex-wrap items-center justify-between gap-3 px-5 py-4"
+            >
+              <div>
+                <p className="text-sm font-semibold text-foreground">
+                  {formatNgn(payment.amountNgn)}
+                </p>
+                <p className="text-xs text-muted">
+                  {payment.orderNumber} · {payment.method}
+                </p>
+                <p className="text-xs text-muted">
+                  {formatUpdatedAt(payment.paidAt)}
+                </p>
+              </div>
+              <PaymentStatusPill status={payment.status} />
+            </li>
+          ))
+        )}
+      </ul>
+    </section>
   );
 }
 

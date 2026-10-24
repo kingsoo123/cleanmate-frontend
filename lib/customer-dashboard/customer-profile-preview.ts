@@ -15,7 +15,7 @@ export type CustomerProfile = {
 
 export const previewCustomerProfile: CustomerProfile = {
   id: "c1",
-  name: "Ada Okonkwo",
+  name: "Preview Customer",
   phone: "+234 803 222 3344",
   email: "ada.o@email.com",
   preferredLaundry: "Sunbright Laundry & Dry Clean",

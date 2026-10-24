@@ -5,11 +5,11 @@ import type {
 } from "@/lib/business-dashboard/orders-types";
 import type { OrderStatus } from "@/lib/business-dashboard/types";
 
-/** Replace with API/DB queries when order management is connected. */
+/** Server placeholder; client loads via JWT. */
 export async function getBusinessOrdersData(): Promise<BusinessOrdersListData> {
   return {
-    isPreviewData: true,
-    orders: previewOrders,
+    isPreviewData: false,
+    orders: [],
   };
 }
 
@@ -250,8 +250,10 @@ export function filterOrdersList(
   return orders.filter((order) => {
     if (!orderMatchesListFilter(order, options.filter)) return false;
     if (!q) return true;
+    const tag = (order.tag ?? order.trackingCode ?? "").toLowerCase();
     return (
       order.orderNumber.toLowerCase().includes(q) ||
+      tag.includes(q) ||
       order.customerName.toLowerCase().includes(q) ||
       order.customerPhone.replace(/\s/g, "").includes(q.replace(/\s/g, ""))
     );

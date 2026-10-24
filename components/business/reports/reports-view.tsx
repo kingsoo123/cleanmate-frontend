@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useMemo } from "react";
+import { Suspense, useMemo } from "react";
 import { MetricCard } from "@/components/business/dashboard/metric-card";
 import { formatNgn } from "@/lib/business-dashboard/format";
 import {
@@ -21,6 +21,18 @@ const periods: { id: ReportPeriod; label: string }[] = [
 ];
 
 export function ReportsView({
+  snapshots,
+}: {
+  snapshots: Record<ReportPeriod, ReportsSnapshot>;
+}) {
+  return (
+    <Suspense fallback={null}>
+      <ReportsViewContent snapshots={snapshots} />
+    </Suspense>
+  );
+}
+
+function ReportsViewContent({
   snapshots,
 }: {
   snapshots: Record<ReportPeriod, ReportsSnapshot>;
@@ -146,6 +158,9 @@ export function ReportsView({
             Share of received payments in this period
           </p>
           <ul className="mt-6 space-y-4">
+            {snapshot.paymentMethods.length === 0 ? (
+              <li className="text-sm text-muted">No successful payments in this period.</li>
+            ) : null}
             {snapshot.paymentMethods.map((row) => (
               <li key={row.method}>
                 <div className="flex items-center justify-between gap-2 text-sm">
@@ -203,7 +218,7 @@ export function ReportsView({
         <h3 className="text-sm font-semibold text-foreground">
           Top customers by payments
         </h3>
-        <p className="mt-1 text-xs text-muted">Preview ranking for the period</p>
+        <p className="mt-1 text-xs text-muted">Successful payments in this period</p>
         <div className="mt-4 overflow-x-auto">
           <table className="w-full min-w-[320px] text-left text-sm">
             <thead>
@@ -236,8 +251,8 @@ export function ReportsView({
       </section>
 
       <p className="text-xs text-muted">
-        Preview aggregates only. Connect your database for live reporting, PDF
-        export, and custom date ranges.
+        Figures use your live orders, payments, pickups, and customers. Export
+        CSV for bookkeeping; custom date ranges can be added later.
       </p>
     </div>
   );

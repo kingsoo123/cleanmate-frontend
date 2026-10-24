@@ -1,14 +1,16 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
 import { FormField } from "@/components/auth/form-field";
 import { PinField } from "@/components/auth/pin-field";
+import { AuthApiError, signUp } from "@/lib/auth/api-client";
+import { saveAuthSession } from "@/lib/auth/session";
 import {
   isValidEmail,
   isValidPin,
   validatePhone,
 } from "@/lib/auth/validation";
+import { useRouter } from "next/navigation";
 
 type FieldErrors = Partial<Record<string, string>>;
 
@@ -40,18 +42,19 @@ function validateBusinessRegister(data: FormData): FieldErrors | null {
 }
 
 export function RegisterForm() {
+  const router = useRouter();
   const [errors, setErrors] = useState<FieldErrors>({});
-  const [submitted, setSubmitted] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setPending(true);
     setErrors({});
+    setFormError(null);
 
-    const validation = validateBusinessRegister(
-      new FormData(event.currentTarget),
-    );
+    const data = new FormData(event.currentTarget);
+    const validation = validateBusinessRegister(data);
 
     if (validation) {
       setErrors(validation);
@@ -59,42 +62,37 @@ export function RegisterForm() {
       return;
     }
 
-    await new Promise((resolve) => setTimeout(resolve, 400));
-    setSubmitted(true);
-    setPending(false);
-  }
-
-  if (submitted) {
-    return (
-      <div className="text-center">
-        <p className="text-lg font-semibold text-foreground">
-          Account details received
-        </p>
-        <p className="mt-2 text-sm leading-relaxed text-muted">
-          Registration will be connected to the secure auth service in the next
-          release. Your information was validated on this device only and was
-          not stored yet.
-        </p>
-        <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-          <Link
-            href="/login?role=business"
-            className="inline-flex h-11 items-center rounded-full bg-brand-dark px-6 text-sm font-semibold text-white hover:opacity-90"
-          >
-            Continue to sign in
-          </Link>
-          <Link
-            href="/business/dashboard"
-            className="inline-flex h-11 items-center rounded-full border border-border px-6 text-sm font-semibold text-foreground hover:bg-secondary-surface"
-          >
-            Preview business dashboard
-          </Link>
-        </div>
-      </div>
-    );
+    try {
+      const result = await signUp({
+        businessName: String(data.get("businessName") ?? ""),
+        fullName: String(data.get("fullName") ?? ""),
+        phone: String(data.get("phone") ?? ""),
+        email: String(data.get("email") ?? ""),
+        pin: String(data.get("pin") ?? ""),
+      });
+      saveAuthSession(result.accessToken, result.user);
+      router.push("/business/dashboard");
+    } catch (error) {
+      setFormError(
+        error instanceof AuthApiError
+          ? error.message
+          : "Registration failed. Please try again.",
+      );
+    } finally {
+      setPending(false);
+    }
   }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+      {formError ? (
+        <p
+          className="rounded-xl border border-red-200 bg-red-50 px-3 py-2.5 text-xs text-red-700"
+          role="alert"
+        >
+          {formError}
+        </p>
+      ) : null}
       <FormField
         name="businessName"
         label="Business name"

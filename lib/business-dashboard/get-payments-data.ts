@@ -150,25 +150,46 @@ const previewPayments: BusinessPaymentRecord[] = [
   },
 ];
 
+function isRecordedToday(recordedAt: string): boolean {
+  const parsed = Date.parse(recordedAt);
+  if (Number.isNaN(parsed)) return recordedAt.startsWith("Today");
+  return new Date(parsed).toDateString() === new Date().toDateString();
+}
+
+function isRecordedThisWeek(recordedAt: string): boolean {
+  const parsed = Date.parse(recordedAt);
+  if (Number.isNaN(parsed)) {
+    return (
+      recordedAt.startsWith("Today") ||
+      recordedAt.startsWith("Yesterday") ||
+      recordedAt.startsWith("Mon")
+    );
+  }
+  const date = new Date(parsed);
+  const now = new Date();
+  const weekAgo = new Date(now);
+  weekAgo.setDate(now.getDate() - 7);
+  return date >= weekAgo;
+}
+
 function computeSummary(
-  payments: BusinessPaymentRecord[],
-  outstanding: OutstandingOrderForPayment[],
+  payments: BusinessPaymentRecord[] | undefined,
+  outstanding: OutstandingOrderForPayment[] | undefined,
 ): PaymentsSummary {
-  const receivedTodayNgn = payments
-    .filter((p) => p.recordedAt.startsWith("Today"))
+  const rows = payments ?? [];
+  const openOrders = outstanding ?? [];
+  const receivedTodayNgn = rows
+    .filter((p) => p.status === "Recorded" && isRecordedToday(p.recordedAt))
     .reduce((s, p) => s + p.amountNgn, 0);
-  const paymentsTodayCount = payments.filter((p) =>
-    p.recordedAt.startsWith("Today"),
+  const paymentsTodayCount = rows.filter(
+    (p) => p.status === "Recorded" && isRecordedToday(p.recordedAt),
   ).length;
-  const receivedThisWeekNgn = payments
+  const receivedThisWeekNgn = rows
     .filter(
-      (p) =>
-        p.recordedAt.startsWith("Today") ||
-        p.recordedAt.startsWith("Yesterday") ||
-        p.recordedAt.startsWith("Mon"),
+      (p) => p.status === "Recorded" && isRecordedThisWeek(p.recordedAt),
     )
     .reduce((s, p) => s + p.amountNgn, 0);
-  const outstandingOrdersNgn = outstanding.reduce(
+  const outstandingOrdersNgn = openOrders.reduce(
     (s, o) => s + o.outstandingNgn,
     0,
   );
@@ -198,7 +219,7 @@ export function paymentMatchesFilter(
     case "all":
       return true;
     case "today":
-      return payment.recordedAt.startsWith("Today");
+      return isRecordedToday(payment.recordedAt);
     case "cash":
       return payment.method === "Cash";
     case "transfer":
@@ -240,8 +261,8 @@ export function countPaymentsByFilter(
 }
 
 export function recomputeSummary(
-  payments: BusinessPaymentRecord[],
-  outstanding: OutstandingOrderForPayment[],
+  payments: BusinessPaymentRecord[] | undefined,
+  outstanding: OutstandingOrderForPayment[] | undefined,
 ): PaymentsSummary {
   return computeSummary(payments, outstanding);
 }

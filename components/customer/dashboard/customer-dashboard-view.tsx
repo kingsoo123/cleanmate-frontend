@@ -5,7 +5,7 @@ import {
   OrderStatusBadge,
   PaymentStateBadge,
 } from "@/components/business/status-badge";
-import { formatNgn } from "@/lib/business-dashboard/format";
+import { formatNgn, formatUpdatedAt } from "@/lib/business-dashboard/format";
 import { PickupStatusBadge } from "@/components/business/pickups/pickup-status-badge";
 import type { CustomerDashboardData } from "@/lib/customer-dashboard/types";
 
@@ -124,7 +124,8 @@ export function CustomerDashboardView({ data }: { data: CustomerDashboardData })
                 {featuredOrder.processingStage}
               </p>
               <p className="mt-2 text-xs text-muted">
-                {featuredOrder.deliveryPreference} · {featuredOrder.updatedAt}
+                {featuredOrder.deliveryPreference} ·{" "}
+                {formatUpdatedAt(featuredOrder.updatedAt)}
               </p>
             </div>
             <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
@@ -213,7 +214,9 @@ export function CustomerDashboardView({ data }: { data: CustomerDashboardData })
                 <tr key={order.id}>
                   <td className="py-3 pr-4">
                     <p className="font-medium text-foreground">{order.orderNumber}</p>
-                    <p className="text-xs text-muted">{order.updatedAt}</p>
+                    <p className="text-xs text-muted">
+                      {formatUpdatedAt(order.updatedAt)}
+                    </p>
                   </td>
                   <td className="py-3 pr-4">
                     <OrderStatusBadge status={order.status} />

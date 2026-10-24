@@ -15,6 +15,8 @@ export type CustomerPickupRow = {
 export type CustomerOrderRow = {
   id: string;
   orderNumber: string;
+  tag: string;
+  trackingCode: string;
   laundryName: string;
   status: OrderStatus;
   processingStage: string;

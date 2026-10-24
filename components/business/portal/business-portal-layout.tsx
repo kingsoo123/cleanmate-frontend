@@ -2,17 +2,20 @@
 
 import { Suspense, useState, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
+import {
+  BusinessBrandProvider,
+  useBusinessBrand,
+} from "@/components/business/portal/business-brand-provider";
 import { BusinessSidebar } from "@/components/business/portal/business-sidebar";
 import { BusinessTopbar } from "@/components/business/portal/business-topbar";
+import { PushNotificationsEnablePrompt } from "@/components/push-notifications-enable-prompt";
 import { getBusinessNavTitle } from "@/lib/business-dashboard/nav";
 
 export function BusinessPortalLayout({
   children,
-  businessName = "Your laundry",
   periodLabel,
 }: {
   children: ReactNode;
-  businessName?: string;
   periodLabel?: string;
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -20,51 +23,54 @@ export function BusinessPortalLayout({
   const openSidebar = () => setSidebarOpen(true);
 
   return (
-    <div className="flex min-h-screen bg-secondary-surface/50">
-      <Suspense fallback={<BusinessSidebarFallback />}>
-        <BusinessSidebar open={sidebarOpen} onClose={closeSidebar} />
-      </Suspense>
-      <div className="flex min-w-0 flex-1 flex-col">
-        <Suspense
-          fallback={
-            <BusinessTopbar
-              title="Business portal"
-              businessName={businessName}
+    <BusinessBrandProvider>
+      <div className="flex min-h-screen bg-secondary-surface/50">
+        <Suspense fallback={<BusinessSidebarFallback />}>
+          <BusinessSidebar open={sidebarOpen} onClose={closeSidebar} />
+        </Suspense>
+        <div className="flex min-w-0 flex-1 flex-col">
+          <Suspense
+            fallback={
+              <BusinessTopbar
+                title="Business portal"
+                businessName="Your laundry"
+                periodLabel={periodLabel}
+                onMenuClick={openSidebar}
+              />
+            }
+          >
+            <BusinessTopbarWithPathname
               periodLabel={periodLabel}
               onMenuClick={openSidebar}
             />
-          }
-        >
-          <BusinessTopbarWithPathname
-            businessName={businessName}
-            periodLabel={periodLabel}
-            onMenuClick={openSidebar}
-          />
-        </Suspense>
-        <main className="flex-1 p-4 sm:p-6">
-          <Suspense fallback={<BusinessMainFallback />}>{children}</Suspense>
-        </main>
+          </Suspense>
+          <PushNotificationsEnablePrompt />
+          <main className="flex-1 p-4 sm:p-6">
+            <Suspense fallback={<BusinessMainFallback />}>{children}</Suspense>
+          </main>
+        </div>
       </div>
-    </div>
+    </BusinessBrandProvider>
   );
 }
 
 function BusinessTopbarWithPathname({
-  businessName,
   periodLabel,
   onMenuClick,
 }: {
-  businessName: string;
   periodLabel?: string;
   onMenuClick: () => void;
 }) {
   const pathname = usePathname();
   const title = getBusinessNavTitle(pathname);
+  const brand = useBusinessBrand();
 
   return (
     <BusinessTopbar
       title={title}
-      businessName={businessName}
+      businessName={brand.businessName}
+      ownerName={brand.ownerName}
+      ownerInitials={brand.ownerInitials}
       periodLabel={periodLabel}
       onMenuClick={onMenuClick}
     />

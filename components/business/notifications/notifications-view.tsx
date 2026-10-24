@@ -30,15 +30,24 @@ const logFilters: { id: NotificationLogFilter; label: string }[] = [
 
 type TabId = "channels" | "events" | "templates" | "log";
 
-export function NotificationsView({ initialData }: { initialData: NotificationsData }) {
+export function NotificationsView({
+  data,
+  onToggleChannel,
+  onToggleEventChannel,
+}: {
+  data: NotificationsData;
+  onToggleChannel: (channel: NotificationChannel) => void;
+  onToggleEventChannel: (
+    eventId: NotificationEventConfig["id"],
+    channel: NotificationChannel,
+  ) => void;
+}) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const tab = (searchParams.get("tab") as TabId) || "log";
   const logFilter = parseNotificationLogFilter(searchParams.get("filter") ?? undefined);
 
-  const [channelEnabled, setChannelEnabled] = useState(initialData.channelEnabled);
-  const [events, setEvents] = useState(initialData.events);
-  const [log] = useState(initialData.log);
+  const { channelEnabled, events, log, templates } = data;
   const [query, setQuery] = useState("");
 
   const filteredLog = useMemo(
@@ -68,30 +77,6 @@ export function NotificationsView({ initialData }: { initialData: NotificationsD
         ? `/business/notifications?${params.toString()}`
         : "/business/notifications",
       { scroll: false },
-    );
-  }
-
-  function toggleChannel(channel: NotificationChannel) {
-    setChannelEnabled((prev) => ({ ...prev, [channel]: !prev[channel] }));
-  }
-
-  function toggleEventChannel(
-    eventId: NotificationEventConfig["id"],
-    channel: NotificationChannel,
-  ) {
-    if (!channelEnabled[channel]) return;
-    setEvents((prev) =>
-      prev.map((event) =>
-        event.id === eventId
-          ? {
-              ...event,
-              channels: {
-                ...event.channels,
-                [channel]: !event.channels[channel],
-              },
-            }
-          : event,
-      ),
     );
   }
 
@@ -129,19 +114,19 @@ export function NotificationsView({ initialData }: { initialData: NotificationsD
       </div>
 
       {tab === "channels" ? (
-        <ChannelsPanel enabled={channelEnabled} onToggle={toggleChannel} />
+        <ChannelsPanel enabled={channelEnabled} onToggle={onToggleChannel} />
       ) : null}
 
       {tab === "events" ? (
         <EventsPanel
           events={events}
           channelEnabled={channelEnabled}
-          onToggle={toggleEventChannel}
+          onToggle={onToggleEventChannel}
         />
       ) : null}
 
       {tab === "templates" ? (
-        <TemplatesPanel templates={initialData.templates} />
+        <TemplatesPanel templates={templates} />
       ) : null}
 
       {tab === "log" ? (
@@ -156,9 +141,9 @@ export function NotificationsView({ initialData }: { initialData: NotificationsD
       ) : null}
 
       <p className="text-xs text-muted">
-        Channel and event toggles are saved on this device (preview). Template
-        editing and provider credentials will live under Settings when the
-        notification API is connected.
+        Delivery log reflects live payments, orders, and pickup activity.
+        Channel and event preferences are saved to your business account.
+        Template editing and SMS provider credentials will live under Settings.
       </p>
     </div>
   );

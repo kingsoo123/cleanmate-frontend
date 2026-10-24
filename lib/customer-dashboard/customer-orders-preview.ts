@@ -4,6 +4,8 @@ export const previewCustomerOrders: CustomerOrderRow[] = [
   {
     id: "o1",
     orderNumber: "LD-10482",
+    tag: "CM-10482A1",
+    trackingCode: "CM-10482A1",
     laundryName: "Sunbright Laundry & Dry Clean",
     status: "In Progress",
     processingStage: "Ironing / Folding",
@@ -16,6 +18,8 @@ export const previewCustomerOrders: CustomerOrderRow[] = [
   {
     id: "o2",
     orderNumber: "LD-10471",
+    tag: "CM-10471B2",
+    trackingCode: "CM-10471B2",
     laundryName: "Sunbright Laundry & Dry Clean",
     status: "Awaiting Customer Approval",
     processingStage: "Quotation",
@@ -28,6 +32,8 @@ export const previewCustomerOrders: CustomerOrderRow[] = [
   {
     id: "o3",
     orderNumber: "LD-10455",
+    tag: "CM-10455C3",
+    trackingCode: "CM-10455C3",
     laundryName: "Sunbright Laundry & Dry Clean",
     status: "Ready",
     processingStage: "Ready for collection",
@@ -40,6 +46,8 @@ export const previewCustomerOrders: CustomerOrderRow[] = [
   {
     id: "o4",
     orderNumber: "LD-10480",
+    tag: "CM-10480D4",
+    trackingCode: "CM-10480D4",
     laundryName: "Sunbright Laundry & Dry Clean",
     status: "In Progress",
     processingStage: "Washing / Dry clean",
@@ -52,6 +60,8 @@ export const previewCustomerOrders: CustomerOrderRow[] = [
   {
     id: "o5",
     orderNumber: "LD-10448",
+    tag: "CM-10448E5",
+    trackingCode: "CM-10448E5",
     laundryName: "Sunbright Laundry & Dry Clean",
     status: "Completed",
     processingStage: "Collected",
@@ -64,6 +74,8 @@ export const previewCustomerOrders: CustomerOrderRow[] = [
   {
     id: "o6",
     orderNumber: "LD-10440",
+    tag: "CM-10440F6",
+    trackingCode: "CM-10440F6",
     laundryName: "Sunbright Laundry & Dry Clean",
     status: "Out for Delivery",
     processingStage: "With driver",

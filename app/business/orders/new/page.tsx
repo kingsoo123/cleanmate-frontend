@@ -1,6 +1,5 @@
 import { Suspense } from "react";
-import { NewWalkInOrderView } from "@/components/business/orders/new-walk-in-order-view";
-import { getNewOrderCatalog } from "@/lib/business-dashboard/get-new-order-catalog";
+import { NewWalkInOrderPageClient } from "@/components/business/orders/new-walk-in-order-page-client";
 
 function NewOrderFallback() {
   return (
@@ -17,18 +16,8 @@ async function NewOrderContent({
   searchParams: Promise<{ customer?: string }>;
 }) {
   const { customer: customerId } = await searchParams;
-  const { customers, services } = await getNewOrderCatalog();
-  const validId = customers.some((c) => c.id === customerId)
-    ? customerId
-    : undefined;
 
-  return (
-    <NewWalkInOrderView
-      customers={customers}
-      services={services}
-      initialCustomerId={validId ?? ""}
-    />
-  );
+  return <NewWalkInOrderPageClient initialCustomerId={customerId ?? ""} />;
 }
 
 export default function BusinessNewOrderPage({

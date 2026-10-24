@@ -3,8 +3,10 @@
 import { useState } from "react";
 import { FormField } from "@/components/auth/form-field";
 import { PinField } from "@/components/auth/pin-field";
-import { isValidPin, validatePhone } from "@/lib/auth/validation";
+import { AuthApiError } from "@/lib/auth/api-client";
+import { createBusinessCustomer } from "@/lib/business-dashboard/customers-api";
 import type { BusinessCustomer } from "@/lib/business-dashboard/customers-types";
+import { isValidEmail, isValidPin, validatePhone } from "@/lib/auth/validation";
 
 type FieldErrors = Partial<Record<string, string>>;
 
@@ -14,16 +16,19 @@ export function RegisterCustomerForm({
   onCustomerAdded: (customer: BusinessCustomer) => void;
 }) {
   const [errors, setErrors] = useState<FieldErrors>({});
+  const [formError, setFormError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [pending, setPending] = useState(false);
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const form = event.currentTarget;
     setPending(true);
     setErrors({});
+    setFormError(null);
     setSuccess(false);
 
-    const data = new FormData(event.currentTarget);
+    const data = new FormData(form);
     const name = String(data.get("name") ?? "").trim();
     const phone = String(data.get("phone") ?? "").trim();
     const email = String(data.get("email") ?? "").trim();
@@ -34,6 +39,9 @@ export function RegisterCustomerForm({
     if (!name) nextErrors.name = "Customer name is required.";
     if (!phone) nextErrors.phone = "Phone number is required.";
     else if (!validatePhone(phone)) nextErrors.phone = "Enter a valid phone number.";
+    if (email && !isValidEmail(email)) {
+      nextErrors.email = "Enter a valid email address.";
+    }
     if (!isValidPin(pin)) {
       nextErrors.pin = "Set a 6-digit PIN the customer will use to sign in.";
     }
@@ -44,23 +52,26 @@ export function RegisterCustomerForm({
       return;
     }
 
-    onCustomerAdded({
-      id: crypto.randomUUID(),
-      name,
-      phone,
-      email: email || null,
-      registeredAt: "Just now",
-      totalOrders: 0,
-      activeOrders: 0,
-      outstandingNgn: 0,
-      lastActivity: "Just now",
-      portalAccess: true,
-      defaultAddress: defaultAddress || null,
-    });
-
-    event.currentTarget.reset();
-    setSuccess(true);
-    setPending(false);
+    try {
+      const customer = await createBusinessCustomer({
+        name,
+        phone,
+        pin,
+        ...(email ? { email } : {}),
+        ...(defaultAddress ? { defaultAddress } : {}),
+      });
+      onCustomerAdded(customer);
+      form.reset();
+      setSuccess(true);
+    } catch (error) {
+      setFormError(
+        error instanceof AuthApiError
+          ? error.message
+          : "Could not add customer. Try again.",
+      );
+    } finally {
+      setPending(false);
+    }
   }
 
   return (
@@ -72,13 +83,21 @@ export function RegisterCustomerForm({
         <span className="font-medium text-foreground">/login?role=customer</span>.
       </p>
 
+      {formError ? (
+        <p
+          className="mt-4 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800"
+          role="alert"
+        >
+          {formError}
+        </p>
+      ) : null}
+
       {success ? (
         <p
           className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-900"
           role="status"
         >
-          Customer saved on this device (preview). Connect the API to persist
-          accounts and send login details securely.
+          Customer saved. They can sign in with their phone number and PIN.
         </p>
       ) : null}
 

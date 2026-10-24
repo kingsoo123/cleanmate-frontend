@@ -1,4 +1,8 @@
-import type { RiderDashboardData, RiderJob } from "@/lib/rider-dashboard/types";
+import type {
+  RiderDashboardData,
+  RiderJob,
+  RiderJobStage,
+} from "@/lib/rider-dashboard/types";
 
 /** Replace with API scoped to signed-in rider when auth is connected. */
 export async function getRiderDashboardData(): Promise<RiderDashboardData> {

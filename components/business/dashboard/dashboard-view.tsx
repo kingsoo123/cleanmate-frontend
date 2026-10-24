@@ -5,7 +5,7 @@ import {
   OrderStatusBadge,
   PaymentStateBadge,
 } from "@/components/business/status-badge";
-import { formatNgn } from "@/lib/business-dashboard/format";
+import { formatNgn, formatUpdatedAt } from "@/lib/business-dashboard/format";
 import type { BusinessDashboardData } from "@/lib/business-dashboard/types";
 
 function Panel({
@@ -28,7 +28,13 @@ function Panel({
   );
 }
 
-export function DashboardView({ data }: { data: BusinessDashboardData }) {
+export function DashboardView({
+  data,
+  ownerName,
+}: {
+  data: BusinessDashboardData;
+  ownerName?: string;
+}) {
   const { financial, operational } = data;
   const maxStage = Math.max(...data.processingStages.map((s) => s.count), 1);
 
@@ -39,19 +45,18 @@ export function DashboardView({ data }: { data: BusinessDashboardData }) {
         <h2 className="mt-1 text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
           {data.businessName}
         </h2>
-        <p className="mt-1 text-sm text-muted">
-          Operations overview — orders, payments, pickups, and processing at a
-          glance.
-        </p>
+        {ownerName ? (
+          <p className="mt-1 text-sm text-foreground/90">
+            Welcome back,{" "}
+            <span className="font-medium text-foreground">{ownerName}</span>
+          </p>
+        ) : (
+          <p className="mt-1 text-sm text-muted">
+            Operations overview — orders, payments, pickups, and processing at
+            a glance.
+          </p>
+        )}
       </div>
-
-      {data.isPreviewData ? (
-        <p className="rounded-xl border border-brand/20 bg-brand-light/40 px-4 py-3 text-sm text-foreground">
-          <span className="font-semibold">Preview layout.</span> Metrics below
-          are sample data until your laundry account is connected to live orders
-          and payments.
-        </p>
-      ) : null}
 
       <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
         <Link
@@ -84,7 +89,7 @@ export function DashboardView({ data }: { data: BusinessDashboardData }) {
             value={formatNgn(financial.paymentsReceivedNgn)}
             hint="Cash & transfers recorded today"
             accent="success"
-            trend={{ direction: "up", text: "+12% vs yesterday" }}
+            trend={financial.paymentsTrend}
           />
           <MetricCard
             label="Recorded revenue"
@@ -131,6 +136,11 @@ export function DashboardView({ data }: { data: BusinessDashboardData }) {
             }
           >
             <ul className="space-y-3">
+              {data.attentionOrders.length === 0 ? (
+                <li className="rounded-xl border border-dashed border-border px-3 py-6 text-center text-sm text-muted">
+                  Nothing needs attention right now.
+                </li>
+              ) : null}
               {data.attentionOrders.map((order) => (
                 <li
                   key={order.id}
@@ -196,6 +206,7 @@ export function DashboardView({ data }: { data: BusinessDashboardData }) {
             <thead>
               <tr className="border-b border-border text-xs uppercase tracking-wide text-muted">
                 <th className="pb-3 pr-4 font-medium">Order</th>
+                <th className="pb-3 pr-4 font-medium">Tag</th>
                 <th className="pb-3 pr-4 font-medium">Customer</th>
                 <th className="pb-3 pr-4 font-medium">Source</th>
                 <th className="pb-3 pr-4 font-medium">Status</th>
@@ -210,6 +221,9 @@ export function DashboardView({ data }: { data: BusinessDashboardData }) {
                   <td className="py-3 pr-4 font-mono text-xs font-semibold text-brand">
                     {row.orderNumber}
                   </td>
+                  <td className="py-3 pr-4 font-mono text-xs font-semibold text-brand">
+                    {row.tag ?? "—"}
+                  </td>
                   <td className="py-3 pr-4 text-foreground">{row.customerName}</td>
                   <td className="py-3 pr-4 text-muted">{row.source}</td>
                   <td className="py-3 pr-4">
@@ -221,7 +235,9 @@ export function DashboardView({ data }: { data: BusinessDashboardData }) {
                   <td className="py-3 pr-4 text-right font-medium">
                     {formatNgn(row.totalNgn)}
                   </td>
-                  <td className="py-3 text-right text-muted">{row.updatedAt}</td>
+                  <td className="py-3 text-right text-muted">
+                    {formatUpdatedAt(row.updatedAt)}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -244,6 +260,11 @@ export function DashboardView({ data }: { data: BusinessDashboardData }) {
           }
         >
           <ul className="divide-y divide-border">
+            {data.driverJobs.length === 0 ? (
+              <li className="py-6 text-center text-sm text-muted">
+                No active driver jobs.
+              </li>
+            ) : null}
             {data.driverJobs.map((job) => (
               <li key={job.id} className="flex items-center justify-between gap-3 py-3 first:pt-0 last:pb-0">
                 <div>
@@ -268,6 +289,11 @@ export function DashboardView({ data }: { data: BusinessDashboardData }) {
           }
         >
           <ul className="divide-y divide-border">
+            {data.recentPayments.length === 0 ? (
+              <li className="py-6 text-center text-sm text-muted">
+                No payments recorded yet.
+              </li>
+            ) : null}
             {data.recentPayments.map((payment) => (
               <li key={payment.id} className="flex items-center justify-between gap-3 py-3 first:pt-0 last:pb-0">
                 <div>
@@ -279,7 +305,9 @@ export function DashboardView({ data }: { data: BusinessDashboardData }) {
                   </p>
                   <p className="text-xs text-muted">{payment.method}</p>
                 </div>
-                <span className="text-xs text-muted">{payment.recordedAt}</span>
+                <span className="text-xs text-muted">
+                  {formatUpdatedAt(payment.recordedAt)}
+                </span>
               </li>
             ))}
           </ul>

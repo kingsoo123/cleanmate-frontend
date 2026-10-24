@@ -52,3 +52,20 @@ body {
 .animate-marquee {
   animation: marquee 28s linear infinite;
 }
+
+@keyframes chat-sending-dot {
+  0%,
+  70%,
+  100% {
+    opacity: 0.35;
+    transform: translateY(0);
+  }
+  35% {
+    opacity: 1;
+    transform: translateY(-3px);
+  }
+}
+
+.chat-sending-dot {
+  animation: chat-sending-dot 1s ease-in-out infinite;
+}

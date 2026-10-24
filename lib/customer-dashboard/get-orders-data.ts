@@ -57,8 +57,10 @@ export function filterCustomerOrdersList(
   return orders.filter((order) => {
     if (!customerOrderMatchesFilter(order, options.filter)) return false;
     if (!q) return true;
+    const tag = (order.tag ?? order.trackingCode ?? "").toLowerCase();
     return (
       order.orderNumber.toLowerCase().includes(q) ||
+      tag.includes(q) ||
       order.processingStage.toLowerCase().includes(q)
     );
   });

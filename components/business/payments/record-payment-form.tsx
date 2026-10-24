@@ -2,7 +2,9 @@
 
 import { useState } from "react";
 import { FormField } from "@/components/auth/form-field";
+import { AuthApiError } from "@/lib/auth/api-client";
 import { formatNgn } from "@/lib/business-dashboard/format";
+import { recordBusinessPayment } from "@/lib/business-dashboard/payments-api";
 import type {
   BusinessPaymentRecord,
   OutstandingOrderForPayment,
@@ -49,6 +51,7 @@ export function RecordPaymentForm({
   const [note, setNote] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const selected = outstandingOrders.find((o) => o.orderId === orderId);
 
@@ -59,7 +62,7 @@ export function RecordPaymentForm({
     setAmount(order ? String(order.outstandingNgn) : "");
   }
 
-  function handleSubmit(event: React.FormEvent) {
+  async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
     setError(null);
     setSuccess(false);
@@ -81,24 +84,28 @@ export function RecordPaymentForm({
       return;
     }
 
-    const payment: BusinessPaymentRecord = {
-      id: crypto.randomUUID(),
-      reference: `PAY-${crypto.randomUUID().slice(0, 4).toUpperCase()}`,
-      orderNumber: selected.orderNumber,
-      customerName: selected.customerName,
-      amountNgn,
-      method,
-      status: method === "Bank transfer" ? "Pending verification" : "Recorded",
-      recordedAt: "Today · Just now",
-      recordedBy: "Front desk",
-      note: note.trim() || null,
-    };
-
-    onPaymentRecorded(payment, selected.orderId, amountNgn);
-    setSuccess(true);
-    setNote("");
-    const remaining = selected.outstandingNgn - amountNgn;
-    setAmount(remaining > 0 ? String(remaining) : "");
+    setSubmitting(true);
+    try {
+      const payment = await recordBusinessPayment({
+        orderId: selected.orderId,
+        amountNgn,
+        method,
+        note: note.trim() || undefined,
+      });
+      onPaymentRecorded(payment, selected.orderId, amountNgn);
+      setSuccess(true);
+      setNote("");
+      const remaining = selected.outstandingNgn - amountNgn;
+      setAmount(remaining > 0 ? String(remaining) : "");
+    } catch (err) {
+      setError(
+        err instanceof AuthApiError
+          ? err.message
+          : "Could not record payment.",
+      );
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   if (outstandingOrders.length === 0) {
@@ -106,7 +113,7 @@ export function RecordPaymentForm({
       <div className="rounded-2xl border border-border bg-surface p-5 shadow-sm sm:p-6">
         <h3 className="text-lg font-semibold text-foreground">Record payment</h3>
         <p className="mt-2 text-sm text-muted">
-          No orders with outstanding balances in preview data.
+          No orders with outstanding balances.
         </p>
       </div>
     );
@@ -125,7 +132,7 @@ export function RecordPaymentForm({
           className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-900"
           role="status"
         >
-          Payment recorded on this device (preview).
+          Payment recorded successfully.
         </p>
       ) : null}
 
@@ -203,9 +210,10 @@ export function RecordPaymentForm({
 
         <button
           type="submit"
-          className="flex h-11 w-full items-center justify-center rounded-full bg-brand-dark text-sm font-semibold text-white hover:opacity-90"
+          disabled={submitting}
+          className="flex h-11 w-full items-center justify-center rounded-full bg-brand-dark text-sm font-semibold text-white hover:opacity-90 disabled:opacity-60"
         >
-          Record payment
+          {submitting ? "Saving…" : "Record payment"}
         </button>
       </form>
     </div>

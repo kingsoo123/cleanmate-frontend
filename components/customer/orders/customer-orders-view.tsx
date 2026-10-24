@@ -2,12 +2,12 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useMemo, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
 import {
   OrderStatusBadge,
   PaymentStateBadge,
 } from "@/components/business/status-badge";
-import { formatNgn } from "@/lib/business-dashboard/format";
+import { formatNgn, formatUpdatedAt } from "@/lib/business-dashboard/format";
 import {
   countCustomerOrdersByFilter,
   filterCustomerOrdersList,
@@ -26,6 +26,28 @@ const filterTabs: { id: CustomerOrderListFilter; label: string }[] = [
 ];
 
 export function CustomerOrdersView({ orders }: { orders: CustomerOrderRow[] }) {
+  return (
+    <Suspense fallback={<CustomerOrdersViewFallback />}>
+      <CustomerOrdersViewContent orders={orders} />
+    </Suspense>
+  );
+}
+
+function CustomerOrdersViewFallback() {
+  return (
+    <div className="mx-auto max-w-3xl animate-pulse space-y-4">
+      <div className="h-8 w-40 rounded-lg bg-secondary-surface" />
+      <div className="h-10 w-full max-w-xs rounded-xl bg-secondary-surface" />
+      <div className="h-48 rounded-2xl bg-secondary-surface" />
+    </div>
+  );
+}
+
+function CustomerOrdersViewContent({
+  orders,
+}: {
+  orders: CustomerOrderRow[];
+}) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [query, setQuery] = useState("");
@@ -119,10 +141,15 @@ function OrderCard({ order }: { order: CustomerOrderRow }) {
       >
         <div className="flex flex-wrap items-start justify-between gap-2">
           <div>
-            <p className="font-mono text-sm font-semibold text-brand">
-              {order.orderNumber}
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted">
+              Tag
             </p>
-            <p className="text-xs text-muted">{order.laundryName}</p>
+            <p className="font-mono text-sm font-bold text-brand">
+              {order.tag || order.trackingCode || "—"}
+            </p>
+            <p className="text-xs text-muted">
+              {order.laundryName} · Ref {order.orderNumber}
+            </p>
           </div>
           <OrderStatusBadge status={order.status} />
         </div>
@@ -131,7 +158,7 @@ function OrderCard({ order }: { order: CustomerOrderRow }) {
           {order.processingStage}
         </p>
         <p className="mt-1 text-xs text-muted">
-          {order.deliveryPreference} · {order.updatedAt}
+          {order.deliveryPreference} · {formatUpdatedAt(order.updatedAt)}
         </p>
 
         <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
