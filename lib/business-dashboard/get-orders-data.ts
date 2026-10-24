@@ -17,6 +17,8 @@ const previewOrders: BusinessOrderListRow[] = [
   {
     id: "o1",
     orderNumber: "LD-10482",
+    tag: "10482",
+    trackingCode: "10482",
     customerName: "Ada Okonkwo",
     customerPhone: "+234 803 222 3344",
     source: "Pickup",
@@ -32,6 +34,8 @@ const previewOrders: BusinessOrderListRow[] = [
   {
     id: "o2",
     orderNumber: "LD-10480",
+    tag: "10480",
+    trackingCode: "10480",
     customerName: "Tunde Bakare",
     customerPhone: "+234 807 555 6677",
     source: "Walk-in",
@@ -47,6 +51,8 @@ const previewOrders: BusinessOrderListRow[] = [
   {
     id: "o3",
     orderNumber: "LD-10479",
+    tag: "10479",
+    trackingCode: "10479",
     customerName: "Fatima Yusuf",
     customerPhone: "+234 701 888 9900",
     source: "Pickup",
@@ -62,6 +68,8 @@ const previewOrders: BusinessOrderListRow[] = [
   {
     id: "o4",
     orderNumber: "LD-10477",
+    tag: "10477",
+    trackingCode: "10477",
     customerName: "James Okafor",
     customerPhone: "+234 809 123 4567",
     source: "Walk-in",
@@ -77,6 +85,8 @@ const previewOrders: BusinessOrderListRow[] = [
   {
     id: "o5",
     orderNumber: "LD-10475",
+    tag: "10475",
+    trackingCode: "10475",
     customerName: "Blessing Adeyemi",
     customerPhone: "+234 816 444 2211",
     source: "Pickup",
@@ -92,6 +102,8 @@ const previewOrders: BusinessOrderListRow[] = [
   {
     id: "o6",
     orderNumber: "LD-10471",
+    tag: "10471",
+    trackingCode: "10471",
     customerName: "Chidi Nwosu",
     customerPhone: "+234 802 333 7788",
     source: "Pickup",
@@ -107,6 +119,8 @@ const previewOrders: BusinessOrderListRow[] = [
   {
     id: "o7",
     orderNumber: "LD-10465",
+    tag: "10465",
+    trackingCode: "10465",
     customerName: "Walk-in — Ibrahim Bello",
     customerPhone: "+234 903 111 0099",
     source: "Walk-in",
@@ -122,6 +136,8 @@ const previewOrders: BusinessOrderListRow[] = [
   {
     id: "o8",
     orderNumber: "LD-10460",
+    tag: "10460",
+    trackingCode: "10460",
     customerName: "Grace Eze",
     customerPhone: "+234 818 777 6655",
     source: "Pickup",
@@ -137,6 +153,8 @@ const previewOrders: BusinessOrderListRow[] = [
   {
     id: "o9",
     orderNumber: "LD-10455",
+    tag: "10455",
+    trackingCode: "10455",
     customerName: "Helen Chu",
     customerPhone: "+234 805 999 1122",
     source: "Walk-in",
@@ -152,6 +170,8 @@ const previewOrders: BusinessOrderListRow[] = [
   {
     id: "o10",
     orderNumber: "LD-10450",
+    tag: "10450",
+    trackingCode: "10450",
     customerName: "Michael Obi",
     customerPhone: "+234 708 222 3344",
     source: "Walk-in",
@@ -167,6 +187,8 @@ const previewOrders: BusinessOrderListRow[] = [
   {
     id: "o11",
     orderNumber: "PU-2209",
+    tag: null,
+    trackingCode: null,
     customerName: "Grace Eze",
     customerPhone: "+234 818 777 6655",
     source: "Pickup",
@@ -182,6 +204,8 @@ const previewOrders: BusinessOrderListRow[] = [
   {
     id: "o12",
     orderNumber: "LD-10448",
+    tag: "10448",
+    trackingCode: "10448",
     customerName: "Yemi Alade",
     customerPhone: "+234 811 555 4433",
     source: "Pickup",

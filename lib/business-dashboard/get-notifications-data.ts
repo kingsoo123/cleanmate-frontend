@@ -87,6 +87,10 @@ export async function getBusinessNotificationsData(): Promise<NotificationsData>
       },
     ],
     log: previewLog,
+    inbox: {
+      unreadCount: 0,
+      items: [],
+    },
   };
 }
 
