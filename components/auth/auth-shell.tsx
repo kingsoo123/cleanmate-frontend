@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
+import { BrandLogo } from "@/components/brand-logo";
 
 export function AuthShell({
   children,
@@ -11,18 +12,7 @@ export function AuthShell({
   return (
     <div className="min-h-full bg-background px-4 py-8 sm:px-6 sm:py-12">
       <div className="mx-auto w-full max-w-md">
-        <Link
-          href="/"
-          className="mb-8 inline-flex items-center gap-2 text-lg font-semibold text-foreground"
-        >
-          <span
-            className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-brand/30 bg-brand-light text-xs font-bold text-brand"
-            aria-hidden
-          >
-            CM
-          </span>
-          CleanMate
-        </Link>
+        <BrandLogo href="/" className="mb-8 text-lg" size="md" />
 
         <div className="rounded-2xl border border-border bg-surface p-6 shadow-sm sm:p-8">
           {children}

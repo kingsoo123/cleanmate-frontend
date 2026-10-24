@@ -21,7 +21,7 @@ export default function Icon() {
           borderRadius: 112,
         }}
       >
-        CM
+        WU
       </div>
     ),
     { ...size },

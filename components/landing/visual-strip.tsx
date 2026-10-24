@@ -7,7 +7,7 @@ export function VisualStrip() {
       <div className="mx-auto max-w-6xl">
         <p className="text-center text-sm font-medium text-muted">
           Fresh laundry, clear tracking—{" "}
-          <span className="font-semibold text-brand">the CleanMate standard</span>
+          <span className="font-semibold text-brand">the Washuply standard</span>
         </p>
         <div className="mt-8 grid gap-4 sm:grid-cols-3">
           {[landingImages.washing, landingImages.hero, landingImages.sunnyHome].map(

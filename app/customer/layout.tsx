@@ -5,7 +5,7 @@ import { CustomerPortalLayout } from "@/components/customer/portal/customer-port
 export const metadata: Metadata = {
   title: {
     default: "My account",
-    template: "%s · CleanMate",
+    template: "%s · Washuply",
   },
 };
 

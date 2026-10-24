@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "CleanMate — Laundry Platform",
-    short_name: "CleanMate",
+    name: "Washuply — Laundry Platform",
+    short_name: "Washuply",
     description:
       "Pickup, orders, payments, and messaging for laundry businesses and customers.",
     start_url: "/",

@@ -109,7 +109,7 @@ export function BusinessSidebar({
             <p className="truncate text-xs text-muted">
               {brand.isFromSession && brand.ownerName
                 ? brand.ownerName
-                : "CleanMate business portal"}
+                : "Washuply business portal"}
             </p>
           </div>
         </div>

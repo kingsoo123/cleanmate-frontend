@@ -15,7 +15,7 @@ function SunMark({ className }: { className?: string }) {
 
 const segment = (
   <>
-    <span className="mx-6 text-lg font-semibold tracking-wide">Clean</span>
+    <span className="mx-6 text-lg font-semibold tracking-wide">Washuply</span>
     <SunMark className="mx-2 shrink-0 opacity-90" />
   </>
 );

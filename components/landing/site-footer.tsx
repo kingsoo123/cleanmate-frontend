@@ -5,7 +5,7 @@ export function SiteFooter() {
     <footer className="border-t border-border bg-surface px-4 py-12 sm:px-8">
       <div className="mx-auto flex max-w-6xl flex-col gap-8 md:flex-row md:justify-between">
         <div>
-          <p className="font-semibold text-foreground">CleanMate</p>
+          <p className="font-semibold text-foreground">Washuply</p>
           <p className="mt-2 max-w-xs text-sm text-muted">
             Laundry and dry-cleaning—for businesses and customers on one
             connected platform.
@@ -33,7 +33,7 @@ export function SiteFooter() {
         </nav>
       </div>
       <p className="mx-auto mt-8 max-w-6xl text-center text-xs text-muted md:text-left">
-        © 2026 CleanMate. All rights reserved.
+        © 2026 Washuply. All rights reserved.
       </p>
     </footer>
   );

@@ -21,7 +21,7 @@ export default function AppleIcon() {
           borderRadius: 40,
         }}
       >
-        CM
+        WU
       </div>
     ),
     { ...size },

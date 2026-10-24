@@ -76,7 +76,7 @@ export async function getBusinessNotificationsData(): Promise<NotificationsData>
         channel: "sms",
         subject: null,
         bodyPreview:
-          "{{name}}, your pickup {{reference}} quote is ₦{{total}}. Open the CleanMate app to approve or call us.",
+          "{{name}}, your pickup {{reference}} quote is ₦{{total}}. Open the Washuply app to approve or call us.",
       },
       {
         eventId: "out_for_delivery",

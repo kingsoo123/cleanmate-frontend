@@ -73,7 +73,7 @@ function ReportsViewContent({
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement("a");
     anchor.href = url;
-    anchor.download = `cleanmate-report-${period}.csv`;
+    anchor.download = `washuply-report-${period}.csv`;
     anchor.click();
     URL.revokeObjectURL(url);
   }

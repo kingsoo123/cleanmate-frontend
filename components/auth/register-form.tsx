@@ -147,7 +147,7 @@ export function RegisterForm() {
             className="mt-0.5 h-4 w-4 rounded border-border text-brand focus:ring-brand/30"
           />
           <span>
-            I agree to CleanMate&apos;s terms of service and privacy policy.
+            I agree to Washuply&apos;s terms of service and privacy policy.
           </span>
         </label>
         {errors.terms ? (

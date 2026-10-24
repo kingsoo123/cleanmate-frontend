@@ -29,7 +29,7 @@ export function HowItWorks() {
         </h2>
         <p className="mx-auto mt-4 max-w-2xl text-center text-muted">
           Simple steps for customers—and the same workflow powers laundry
-          businesses on CleanMate from quote to quality check.
+          businesses on Washuply from quote to quality check.
         </p>
 
         <ol className="mt-14 grid gap-6 md:grid-cols-3">

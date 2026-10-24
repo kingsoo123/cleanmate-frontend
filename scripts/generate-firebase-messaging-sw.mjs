@@ -66,7 +66,7 @@ const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage((payload) => {
   const title =
-    payload.notification?.title || payload.data?.title || "CleanMate";
+    payload.notification?.title || payload.data?.title || "Washuply";
   const body = payload.notification?.body || payload.data?.body || "";
   const href = payload.fcmOptions?.link || payload.data?.href;
 

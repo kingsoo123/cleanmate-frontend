@@ -5,7 +5,7 @@ import { BusinessPortalLayout } from "@/components/business/portal/business-port
 export const metadata: Metadata = {
   title: {
     default: "Business portal",
-    template: "%s · CleanMate Business",
+    template: "%s · Washuply Business",
   },
 };
 

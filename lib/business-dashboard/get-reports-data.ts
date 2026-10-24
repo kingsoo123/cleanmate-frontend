@@ -107,7 +107,7 @@ export function parseReportPeriod(value: string | undefined): ReportPeriod {
 
 export function buildReportsCsv(snapshot: ReportsSnapshot): string {
   const lines = [
-    `CleanMate report,${snapshot.periodLabel}`,
+    `Washuply report,${snapshot.periodLabel}`,
     "",
     "Financial",
     `Recorded revenue,${snapshot.financial.recordedRevenueNgn}`,

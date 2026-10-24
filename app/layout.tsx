@@ -17,15 +17,15 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "CleanMate — Laundry & Dry-Cleaning Platform",
-    template: "%s · CleanMate",
+    default: "Washuply — Laundry & Dry-Cleaning Platform",
+    template: "%s · Washuply",
   },
   description:
-    "CleanMate connects laundry businesses with customers—pickup, processing, payments, and delivery in one professional platform.",
-  applicationName: "CleanMate",
+    "Washuply connects laundry businesses with customers—pickup, processing, payments, and delivery in one professional platform.",
+  applicationName: "Washuply",
   appleWebApp: {
     capable: true,
-    title: "CleanMate",
+    title: "Washuply",
     statusBarStyle: "default",
   },
   formatDetection: {

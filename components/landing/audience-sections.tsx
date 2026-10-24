@@ -50,7 +50,7 @@ export function AudienceSections() {
             </h2>
             <p className="mt-4 leading-relaxed text-muted">
               Whether you run a neighborhood laundry or a multi-service
-              dry-cleaning facility, CleanMate digitizes walk-ins, customer
+              dry-cleaning facility, Washuply digitizes walk-ins, customer
               pickups, driver runs, and back-office work.
             </p>
             <ul className="mt-8 space-y-3">
@@ -65,7 +65,7 @@ export function AudienceSections() {
               href="/register?role=business"
               className="mt-8 inline-flex h-11 items-center rounded-full bg-brand-dark px-6 text-sm font-semibold text-white transition-opacity hover:opacity-90"
             >
-              Partner with CleanMate
+              Partner with Washuply
             </Link>
           </div>
           <div className="space-y-4">
@@ -112,14 +112,14 @@ export function AudienceSections() {
           </div>
           <div className="order-1 lg:order-2">
             <p className="text-sm font-semibold uppercase tracking-wide text-brand">
-              Why choose CleanMate
+              Why choose Washuply
             </p>
             <h2 className="mt-3 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
               Laundry that fits your life—not the other way around
             </h2>
             <p className="mt-4 leading-relaxed text-muted">
               End customers are onboarded by their laundry—not via public
-              sign-up. Once your provider adds you in CleanMate, you can sign in
+              sign-up. Once your provider adds you in Washuply, you can sign in
               with your phone number and PIN to request pickups, approve quotes,
               and track orders.
             </p>

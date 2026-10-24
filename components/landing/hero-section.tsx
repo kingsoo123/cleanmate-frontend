@@ -25,7 +25,7 @@ export function HeroSection() {
             <span className="text-brand">clean.</span>
           </h1>
           <p className="max-w-lg text-base leading-7 text-muted sm:text-lg sm:leading-8">
-            CleanMate connects you with trusted laundries—schedule pickup,
+            Washuply connects you with trusted laundries—schedule pickup,
             track every stage, approve your quote, and pay clearly. For
             businesses, it is the same platform powering orders, drivers, and
             payments behind the scenes.
