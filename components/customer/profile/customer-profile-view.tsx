@@ -198,12 +198,14 @@ export function CustomerProfileView({
             name="newPin"
             label="New 6-digit PIN"
             autoComplete="new-password"
+            hint={null}
             error={pinErrors.newPin}
           />
           <PinField
             name="confirmPin"
             label="Confirm PIN"
             autoComplete="new-password"
+            hint={null}
             error={pinErrors.confirmPin}
           />
           <button

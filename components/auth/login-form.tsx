@@ -131,6 +131,7 @@ export function LoginForm({ role }: { role: OnboardingRole }) {
         name="pin"
         label="6-digit PIN"
         autoComplete="current-password"
+        hint={null}
         error={errors.pin}
       />
 

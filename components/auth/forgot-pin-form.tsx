@@ -104,6 +104,7 @@ export function ForgotPinForm({ role }: { role: OnboardingRole }) {
         name="newPin"
         label="New 6-digit PIN"
         autoComplete="new-password"
+        hint={null}
         error={errors.newPin}
       />
 
@@ -111,6 +112,7 @@ export function ForgotPinForm({ role }: { role: OnboardingRole }) {
         name="confirmPin"
         label="Confirm new PIN"
         autoComplete="new-password"
+        hint={null}
         error={errors.confirmPin}
       />
 
