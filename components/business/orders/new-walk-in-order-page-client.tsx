@@ -6,6 +6,7 @@ import { AuthApiError } from "@/lib/auth/api-client";
 import { fetchNewOrderCatalog } from "@/lib/business-dashboard/operations-api";
 import type {
   CatalogService,
+  PreviewBranch,
   PreviewCustomer,
 } from "@/lib/business-dashboard/new-order-types";
 
@@ -16,6 +17,7 @@ export function NewWalkInOrderPageClient({
 }) {
   const [customers, setCustomers] = useState<PreviewCustomer[]>([]);
   const [services, setServices] = useState<CatalogService[]>([]);
+  const [branches, setBranches] = useState<PreviewBranch[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -27,6 +29,7 @@ export function NewWalkInOrderPageClient({
         if (cancelled) return;
         setCustomers(catalog.customers);
         setServices(catalog.services);
+        setBranches(catalog.branches ?? []);
       } catch (err) {
         if (!cancelled) {
           setError(
@@ -64,6 +67,7 @@ export function NewWalkInOrderPageClient({
     <NewWalkInOrderView
       customers={customers}
       services={services}
+      branches={branches}
       initialCustomerId={validCustomerId}
     />
   );

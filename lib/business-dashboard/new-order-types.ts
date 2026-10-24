@@ -11,6 +11,12 @@ export type PreviewCustomer = {
   phone: string;
 };
 
+export type PreviewBranch = {
+  id: string;
+  name: string;
+  address: string | null;
+};
+
 export type OrderLineItem = {
   id: string;
   serviceId: string;
@@ -22,6 +28,7 @@ export type OrderLineItem = {
 export type DeliveryPreference = "Pickup at shop" | "Home delivery";
 
 export type NewWalkInOrderDraft = {
+  branchId: string;
   customerMode: "existing" | "walk-in";
   customerId: string;
   walkInName: string;

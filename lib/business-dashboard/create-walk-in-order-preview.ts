@@ -25,6 +25,9 @@ export function validateNewOrderStep(
   const errors: Record<string, string> = {};
 
   if (step === 0) {
+    if (!draft.branchId) {
+      errors.branchId = "Select a branch for this order.";
+    }
     if (draft.customerMode === "existing") {
       if (!draft.customerId) {
         errors.customerId = "Select a customer.";

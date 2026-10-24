@@ -4,6 +4,7 @@ import type {
   CatalogService,
   CreatedWalkInOrderPreview,
   NewWalkInOrderDraft,
+  PreviewBranch,
   PreviewCustomer,
 } from "@/lib/business-dashboard/new-order-types";
 import type {
@@ -50,6 +51,7 @@ export function fetchNewOrderCatalog() {
   return apiFetch<{
     customers: PreviewCustomer[];
     services: CatalogService[];
+    branches: PreviewBranch[];
   }>("/business/orders/catalog");
 }
 
@@ -57,6 +59,7 @@ export function createWalkInOrder(draft: NewWalkInOrderDraft) {
   return apiFetch<CreatedWalkInOrderPreview>("/business/orders/walk-in", {
     method: "POST",
     body: JSON.stringify({
+      branchId: draft.branchId,
       customerMode: draft.customerMode,
       customerId: draft.customerMode === "existing" ? draft.customerId : undefined,
       walkInName: draft.customerMode === "walk-in" ? draft.walkInName : undefined,

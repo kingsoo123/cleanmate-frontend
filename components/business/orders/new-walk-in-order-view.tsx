@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { FormField } from "@/components/auth/form-field";
 import {
   OrderStatusBadge,
@@ -21,13 +21,15 @@ import type {
   DeliveryPreference,
   NewWalkInOrderDraft,
   OrderLineItem,
+  PreviewBranch,
   PreviewCustomer,
 } from "@/lib/business-dashboard/new-order-types";
 import type { OrderStatus, PaymentState } from "@/lib/business-dashboard/types";
 
 const STEPS = ["Customer", "Items", "Quotation", "Payment"] as const;
 
-const defaultDraft = (): NewWalkInOrderDraft => ({
+const defaultDraft = (branchId = ""): NewWalkInOrderDraft => ({
+  branchId,
   customerMode: "existing",
   customerId: "",
   walkInName: "",
@@ -44,15 +46,17 @@ const defaultDraft = (): NewWalkInOrderDraft => ({
 export function NewWalkInOrderView({
   customers,
   services,
+  branches,
   initialCustomerId = "",
 }: {
   customers: PreviewCustomer[];
   services: CatalogService[];
+  branches: PreviewBranch[];
   initialCustomerId?: string;
 }) {
   const [step, setStep] = useState(0);
   const [draft, setDraft] = useState<NewWalkInOrderDraft>(() => ({
-    ...defaultDraft(),
+    ...defaultDraft(branches[0]?.id ?? ""),
     customerId: initialCustomerId,
     customerMode: initialCustomerId ? "existing" : "existing",
   }));
@@ -65,6 +69,12 @@ export function NewWalkInOrderView({
   const [addQty, setAddQty] = useState(1);
 
   const totalNgn = useMemo(() => sumLineItems(draft.lineItems), [draft.lineItems]);
+
+  useEffect(() => {
+    if (!draft.branchId && branches[0]?.id) {
+      patch({ branchId: branches[0].id });
+    }
+  }, [branches, draft.branchId]);
 
   const servicesByCategory = useMemo(() => {
     const map = new Map<string, CatalogService[]>();
@@ -147,7 +157,7 @@ export function NewWalkInOrderView({
         created={created}
         onStartAnother={() => {
           setCreated(null);
-          setDraft(defaultDraft());
+          setDraft(defaultDraft(branches[0]?.id ?? ""));
           setStep(0);
         }}
       />
@@ -186,6 +196,7 @@ export function NewWalkInOrderView({
           <CustomerStep
             draft={draft}
             customers={customers}
+            branches={branches}
             errors={errors}
             onPatch={patch}
           />
@@ -277,11 +288,13 @@ function StepIndicator({ current }: { current: number }) {
 function CustomerStep({
   draft,
   customers,
+  branches,
   errors,
   onPatch,
 }: {
   draft: NewWalkInOrderDraft;
   customers: PreviewCustomer[];
+  branches: PreviewBranch[];
   errors: Record<string, string>;
   onPatch: (partial: Partial<NewWalkInOrderDraft>) => void;
 }) {
@@ -298,6 +311,23 @@ function CustomerStep({
           .
         </p>
       </div>
+
+      <SelectField
+        label="Branch"
+        name="branchId"
+        required
+        value={draft.branchId}
+        onChange={(e) => onPatch({ branchId: e.target.value })}
+        error={errors.branchId}
+      >
+        <option value="">Select branch…</option>
+        {branches.map((branch) => (
+          <option key={branch.id} value={branch.id}>
+            {branch.name}
+            {branch.address ? ` · ${branch.address}` : ""}
+          </option>
+        ))}
+      </SelectField>
 
       <div className="flex flex-wrap gap-2">
         {(

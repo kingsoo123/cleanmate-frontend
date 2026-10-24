@@ -1,6 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import {
+  RegisterBranchesField,
+  type RegisterBranchDraft,
+} from "@/components/auth/register-branches-field";
 import { FormField } from "@/components/auth/form-field";
 import { PinField } from "@/components/auth/pin-field";
 import { AuthApiError, signUp } from "@/lib/auth/api-client";
@@ -14,7 +18,10 @@ import { useRouter } from "next/navigation";
 
 type FieldErrors = Partial<Record<string, string>>;
 
-function validateBusinessRegister(data: FormData): FieldErrors | null {
+function validateBusinessRegister(
+  data: FormData,
+  branches: RegisterBranchDraft[],
+): FieldErrors | null {
   const errors: FieldErrors = {};
   const email = String(data.get("email") ?? "").trim();
   const pin = String(data.get("pin") ?? "");
@@ -38,6 +45,11 @@ function validateBusinessRegister(data: FormData): FieldErrors | null {
   }
   if (!terms) errors.terms = "You must accept the terms to continue.";
 
+  const namedBranches = branches.filter((b) => b.name.trim());
+  if (namedBranches.length === 0) {
+    errors.branches = "Add at least one branch name.";
+  }
+
   return Object.keys(errors).length ? errors : null;
 }
 
@@ -46,6 +58,7 @@ export function RegisterForm() {
   const [errors, setErrors] = useState<FieldErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const [branches, setBranches] = useState<RegisterBranchDraft[]>([]);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -54,7 +67,7 @@ export function RegisterForm() {
     setFormError(null);
 
     const data = new FormData(event.currentTarget);
-    const validation = validateBusinessRegister(data);
+    const validation = validateBusinessRegister(data, branches);
 
     if (validation) {
       setErrors(validation);
@@ -63,12 +76,20 @@ export function RegisterForm() {
     }
 
     try {
+      const branchPayload = branches
+        .map((row) => ({
+          name: row.name.trim(),
+          address: row.address.trim() || undefined,
+        }))
+        .filter((row) => row.name);
+
       const result = await signUp({
         businessName: String(data.get("businessName") ?? ""),
         fullName: String(data.get("fullName") ?? ""),
         phone: String(data.get("phone") ?? ""),
         email: String(data.get("email") ?? ""),
         pin: String(data.get("pin") ?? ""),
+        branches: branchPayload,
       });
       saveAuthSession(result.accessToken, result.user);
       router.push("/business/dashboard");
@@ -129,6 +150,11 @@ export function RegisterForm() {
         autoComplete="email"
         required
         error={errors.email}
+      />
+
+      <RegisterBranchesField
+        error={errors.branches}
+        onChange={setBranches}
       />
 
       <PinField

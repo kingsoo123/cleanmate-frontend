@@ -1,7 +1,7 @@
 import type { OnboardingRole } from "@/lib/auth/onboarding";
 import type { AuthUserPayload } from "@/lib/auth/types";
 
-import { apiUrl } from "@/lib/api/base-url";
+import { apiUrl, resolveApiBaseUrl } from "@/lib/api/base-url";
 
 export type AuthResponse = {
   accessToken: string;
@@ -36,11 +36,26 @@ async function parseErrorMessage(response: Response): Promise<string> {
 }
 
 async function postJson<T>(path: string, payload: unknown): Promise<T> {
-  const response = await fetch(apiUrl(path), {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
+  let response: Response;
+  try {
+    response = await fetch(apiUrl(path), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+  } catch {
+    const base = resolveApiBaseUrl();
+    const hint =
+      typeof window !== "undefined" &&
+      !window.location.hostname.includes("localhost") &&
+      /localhost|127\.0\.0\.1/.test(base)
+        ? " The app is pointing at localhost—set NEXT_PUBLIC_API_URL on Netlify to your Render API URL and redeploy."
+        : " Check that the backend is running and reachable from this network.";
+    throw new AuthApiError(
+      `Could not reach the sign-in API.${hint}`,
+      0,
+    );
+  }
 
   if (!response.ok) {
     throw new AuthApiError(await parseErrorMessage(response), response.status);
@@ -55,6 +70,7 @@ export function signUp(payload: {
   phone: string;
   email: string;
   pin: string;
+  branches?: { name: string; address?: string }[];
 }) {
   return postJson<AuthResponse>("/auth/sign-up", payload);
 }
