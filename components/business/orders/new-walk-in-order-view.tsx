@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { FormField } from "@/components/auth/form-field";
 import {
   OrderStatusBadge,
@@ -28,8 +28,8 @@ import type { OrderStatus, PaymentState } from "@/lib/business-dashboard/types";
 
 const STEPS = ["Customer", "Items", "Quotation", "Payment"] as const;
 
-const defaultDraft = (branchId = ""): NewWalkInOrderDraft => ({
-  branchId,
+const defaultDraft = (): NewWalkInOrderDraft => ({
+  branchId: "",
   customerMode: "existing",
   customerId: "",
   walkInName: "",
@@ -56,7 +56,7 @@ export function NewWalkInOrderView({
 }) {
   const [step, setStep] = useState(0);
   const [draft, setDraft] = useState<NewWalkInOrderDraft>(() => ({
-    ...defaultDraft(branches[0]?.id ?? ""),
+    ...defaultDraft(),
     customerId: initialCustomerId,
     customerMode: initialCustomerId ? "existing" : "existing",
   }));
@@ -69,12 +69,6 @@ export function NewWalkInOrderView({
   const [addQty, setAddQty] = useState(1);
 
   const totalNgn = useMemo(() => sumLineItems(draft.lineItems), [draft.lineItems]);
-
-  useEffect(() => {
-    if (!draft.branchId && branches[0]?.id) {
-      patch({ branchId: branches[0].id });
-    }
-  }, [branches, draft.branchId]);
 
   const servicesByCategory = useMemo(() => {
     const map = new Map<string, CatalogService[]>();
@@ -157,7 +151,7 @@ export function NewWalkInOrderView({
         created={created}
         onStartAnother={() => {
           setCreated(null);
-          setDraft(defaultDraft(branches[0]?.id ?? ""));
+          setDraft(defaultDraft());
           setStep(0);
         }}
       />
