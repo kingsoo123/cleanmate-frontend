@@ -13,7 +13,6 @@ function isStandaloneDisplay(): boolean {
   if (typeof window === "undefined") return false;
   return (
     window.matchMedia("(display-mode: standalone)").matches ||
-    // iOS Safari
     ("standalone" in navigator &&
       (navigator as Navigator & { standalone?: boolean }).standalone === true)
   );
@@ -28,9 +27,10 @@ function isIosSafari(): boolean {
 }
 
 /**
- * Bottom banner: native install on Android/Chrome when available; iOS Add to Home Screen hint.
+ * Install hint on the marketing home page only (not auth or portal routes).
  */
 export function PwaInstallPrompt() {
+  const [ready, setReady] = useState(false);
   const [deferredPrompt, setDeferredPrompt] =
     useState<BeforeInstallPromptEvent | null>(null);
   const [dismissed, setDismissed] = useState(false);
@@ -38,6 +38,8 @@ export function PwaInstallPrompt() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+    setReady(true);
+
     if (isStandaloneDisplay()) return;
     try {
       if (localStorage.getItem(DISMISS_KEY) === "1") {
@@ -80,7 +82,7 @@ export function PwaInstallPrompt() {
     dismiss();
   }, [deferredPrompt, dismiss]);
 
-  if (dismissed || isStandaloneDisplay()) {
+  if (!ready || dismissed || isStandaloneDisplay()) {
     return null;
   }
 
@@ -96,18 +98,20 @@ export function PwaInstallPrompt() {
     : "Install Washuply: tap Share, then Add to Home Screen.";
 
   return (
-    <div
-      role="status"
-      className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-surface/95 px-4 py-3 shadow-[0_-8px_32px_rgba(0,0,0,0.12)] backdrop-blur-sm sm:px-6"
+    <aside
+      aria-label="Install Washuply app"
+      className="mx-4 mt-10 rounded-2xl border border-brand/25 bg-brand-light/70 px-4 py-4 shadow-sm sm:mx-8 sm:px-6 sm:py-5"
     >
-      <div className="mx-auto flex max-w-3xl flex-wrap items-center justify-between gap-3">
-        <p className="text-sm font-medium text-foreground">{message}</p>
-        <div className="flex shrink-0 items-center gap-2">
+      <div className="mx-auto flex max-w-6xl flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-sm font-medium leading-relaxed text-foreground sm:text-[15px]">
+          {message}
+        </p>
+        <div className="flex flex-wrap items-center gap-3 sm:shrink-0 sm:justify-end">
           {showAndroid ? (
             <button
               type="button"
               onClick={() => void install()}
-              className="rounded-full bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand/90"
+              className="inline-flex h-11 min-w-[8.5rem] items-center justify-center rounded-full bg-brand-dark px-5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
             >
               Install app
             </button>
@@ -115,12 +119,12 @@ export function PwaInstallPrompt() {
           <button
             type="button"
             onClick={dismiss}
-            className="rounded-full px-3 py-2 text-sm font-medium text-muted hover:text-foreground"
+            className="inline-flex h-11 items-center justify-center rounded-full border border-border bg-surface px-4 text-sm font-semibold text-muted transition-colors hover:text-foreground"
           >
             Not now
           </button>
         </div>
       </div>
-    </div>
+    </aside>
   );
 }
