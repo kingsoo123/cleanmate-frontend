@@ -106,7 +106,9 @@ export function PwaInstallPrompt() {
   const iosMessage =
     iosBrowser === "safari"
       ? "Add Washuply to your home screen: tap Share (□↑) at the bottom of Safari, then Add to Home Screen."
-      : "To install on iPhone, open this site in Safari (not Chrome), then Share → Add to Home Screen.";
+      : iosBrowser === "chrome"
+        ? "In Chrome: tap ⋮ (menu, bottom right) → Add to Home Screen. Apple may hide this until you visit a few times. If it’s missing, open Washuply in Safari and use Share → Add to Home Screen."
+        : "On iPhone, use Safari: Share (□↑) → Add to Home Screen. Other browsers on iOS don’t show an automatic install prompt.";
 
   const message = showAndroid
     ? "Install Washuply on this device for quick access from your home screen."
