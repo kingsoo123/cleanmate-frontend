@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 
 import { FirebaseAnalytics } from "@/components/firebase-analytics";
 import { PushNotificationsSetup } from "@/components/push-notifications-setup";
+import { PwaStaleCacheRecovery } from "@/components/pwa-stale-cache-recovery";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -49,6 +50,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="flex min-h-full flex-col bg-background text-foreground">
         <FirebaseAnalytics />
         <PushNotificationsSetup />
+        <PwaStaleCacheRecovery />
         {children}
       </body>
     </html>

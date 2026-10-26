@@ -7,9 +7,14 @@ const withPWA = withPWAInit({
   disable: process.env.NODE_ENV === "development",
   register: true,
   reloadOnOnline: true,
-  cacheOnFrontEndNav: true,
+  // Caching HTML/RSC navigations breaks styling after deploys (stale HTML + new CSS hashes).
+  cacheOnFrontEndNav: false,
+  aggressiveFrontEndNavCaching: false,
+  dynamicStartUrl: false,
+  extendDefaultRuntimeCaching: false,
   workboxOptions: {
     disableDevLogs: true,
+    runtimeCaching: [],
   },
 });
 
