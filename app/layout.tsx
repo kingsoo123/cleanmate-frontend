@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { Geist, Geist_Mono } from "next/font/google";
 
 import { FirebaseAnalytics } from "@/components/firebase-analytics";
 import { PushNotificationsSetup } from "@/components/push-notifications-setup";
+import { PwaInstallPrompt } from "@/components/pwa-install-prompt";
 import { PwaStaleCacheRecovery } from "@/components/pwa-stale-cache-recovery";
 import "./globals.css";
 
@@ -52,6 +54,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         <PushNotificationsSetup />
         <PwaStaleCacheRecovery />
         {children}
+        <Suspense fallback={null}>
+          <PwaInstallPrompt />
+        </Suspense>
       </body>
     </html>
   );

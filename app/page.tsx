@@ -3,7 +3,6 @@ import { CtaSection } from "@/components/landing/cta-section";
 import { FeaturesGrid } from "@/components/landing/features-grid";
 import { HeroSection } from "@/components/landing/hero-section";
 import { HowItWorks } from "@/components/landing/how-it-works";
-import { PwaInstallPrompt } from "@/components/pwa-install-prompt";
 import { SiteFooter } from "@/components/landing/site-footer";
 import { SiteHeader } from "@/components/landing/site-header";
 import { TickerStrip } from "@/components/landing/ticker-strip";
@@ -22,7 +21,6 @@ export default function Home() {
           <AudienceSections />
           <FeaturesGrid />
           <CtaSection />
-          <PwaInstallPrompt />
         </main>
         <SiteFooter />
       </div>
