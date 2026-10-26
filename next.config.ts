@@ -11,6 +11,7 @@ const withPWA = withPWAInit({
   cacheOnFrontEndNav: false,
   aggressiveFrontEndNavCaching: false,
   dynamicStartUrl: false,
+  cacheStartUrl: false,
   extendDefaultRuntimeCaching: false,
   workboxOptions: {
     disableDevLogs: true,
