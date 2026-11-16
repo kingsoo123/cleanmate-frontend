@@ -420,7 +420,7 @@ function ItemsStep({
           <Link href="/business/services" className="font-medium text-brand hover:underline">
             Services & pricing
           </Link>{" "}
-          catalog (preview).
+          catalog.
         </p>
       </div>
 

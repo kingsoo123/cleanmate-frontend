@@ -40,12 +40,8 @@ export function CustomerMessagesClient() {
   async function handleSend(body: string) {
     setSending(true);
     try {
-      const message = await sendCustomerChatMessage(body);
-      setThread((prev) =>
-        prev
-          ? { ...prev, messages: [...prev.messages, message] }
-          : prev,
-      );
+      await sendCustomerChatMessage(body);
+      await loadThread();
     } finally {
       setSending(false);
     }

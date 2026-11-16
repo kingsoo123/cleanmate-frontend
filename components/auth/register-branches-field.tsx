@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FormField } from "@/components/auth/form-field";
 
 export type RegisterBranchDraft = {
@@ -9,11 +9,8 @@ export type RegisterBranchDraft = {
   address: string;
 };
 
-let nextBranchRowKey = 0;
-
-function emptyBranch(): RegisterBranchDraft {
-  nextBranchRowKey += 1;
-  return { id: `branch-row-${nextBranchRowKey}`, name: "", address: "" };
+function createBranchRow(id: string): RegisterBranchDraft {
+  return { id, name: "", address: "" };
 }
 
 export function RegisterBranchesField({
@@ -23,7 +20,10 @@ export function RegisterBranchesField({
   error?: string;
   onChange: (branches: RegisterBranchDraft[]) => void;
 }) {
-  const [rows, setRows] = useState<RegisterBranchDraft[]>([emptyBranch()]);
+  const nextRowKey = useRef(1);
+  const [rows, setRows] = useState<RegisterBranchDraft[]>(() => [
+    createBranchRow("branch-row-0"),
+  ]);
 
   useEffect(() => {
     onChange(rows);
@@ -39,7 +39,9 @@ export function RegisterBranchesField({
   }
 
   function addRow() {
-    updateRows([...rows, emptyBranch()]);
+    const id = `branch-row-${nextRowKey.current}`;
+    nextRowKey.current += 1;
+    updateRows([...rows, createBranchRow(id)]);
   }
 
   function removeRow(id: string) {

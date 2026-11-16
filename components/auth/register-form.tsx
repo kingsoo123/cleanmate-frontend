@@ -188,7 +188,7 @@ export function RegisterForm() {
         disabled={pending}
         className="mt-2 flex h-11 w-full items-center justify-center rounded-full bg-brand-dark text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
       >
-        {pending ? "Creating account…" : "Create account"}
+        {pending ? "Submitting…" : "Submit"}
       </button>
     </form>
   );

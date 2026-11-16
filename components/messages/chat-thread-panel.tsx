@@ -42,16 +42,20 @@ export function ChatThreadPanel({
   const [draft, setDraft] = useState("");
   const [sendError, setSendError] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const bottomRef = useRef<HTMLDivElement>(null);
   const typingPingTimerRef = useRef<number | null>(null);
 
   const showPartnerTyping = partnerIsTyping && !sending;
 
   const scrollToBottom = useCallback(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    const el = scrollRef.current;
+    if (!el) return;
+    el.scrollTop = el.scrollHeight;
   }, []);
 
   useEffect(() => {
+    if (messages.length === 0 && !showPartnerTyping && !sending) {
+      return;
+    }
     scrollToBottom();
   }, [messages.length, sending, showPartnerTyping, scrollToBottom]);
 
@@ -168,7 +172,6 @@ export function ChatThreadPanel({
           <ChatTypingDotsIndicator side="mine" label="Sending message" />
         ) : null}
 
-        <div ref={bottomRef} />
       </div>
 
       <form
@@ -190,7 +193,10 @@ export function ChatThreadPanel({
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
                 e.preventDefault();
-                void handleSubmit(e);
+                const form = e.currentTarget.form;
+                if (form) {
+                  form.requestSubmit();
+                }
               }
             }}
           />

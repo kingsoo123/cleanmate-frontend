@@ -132,13 +132,11 @@ export function BusinessMessagesClient() {
     if (!selectedCustomerId) return;
     setSending(true);
     try {
-      const message = await sendBusinessChatMessage(selectedCustomerId, body);
-      setThread((prev) =>
-        prev
-          ? { ...prev, messages: [...prev.messages, message] }
-          : prev,
-      );
-      await loadConversations();
+      await sendBusinessChatMessage(selectedCustomerId, body);
+      await Promise.all([
+        loadThread(selectedCustomerId),
+        loadConversations(),
+      ]);
     } finally {
       setSending(false);
     }
