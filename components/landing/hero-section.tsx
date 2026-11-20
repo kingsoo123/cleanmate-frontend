@@ -49,25 +49,18 @@ export function HeroSection() {
           </div>
         </div>
 
-        <div
-          className="relative order-1 mx-auto w-full max-w-md lg:order-2 lg:max-w-none"
-          style={{ maxWidth: "32rem", marginInline: "auto" }}
-        >
+        <div className="relative order-1 mx-auto w-full max-w-md lg:order-2 lg:max-w-none">
           <div
             className="absolute -right-4 top-8 h-[88%] w-[88%] rounded-[42%] bg-brand-light lg:-right-8"
             aria-hidden
           />
-          <div
-            className="relative mx-auto max-w-sm overflow-hidden rounded-[38%] sm:max-w-md lg:max-w-lg"
-            style={{ maxWidth: "28rem", borderRadius: "38%" }}
-          >
+          <div className="relative mx-auto aspect-[4/5] max-w-sm overflow-hidden rounded-[38%] sm:max-w-md lg:max-w-lg">
             <Image
               src={landingImages.heroAccent.src}
               alt={landingImages.heroAccent.alt}
-              width={560}
-              height={700}
+              fill
               priority
-              className="h-auto w-full object-cover"
+              className="object-cover"
               sizes="(max-width: 1024px) 90vw, 480px"
             />
           </div>
