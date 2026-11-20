@@ -7,4 +7,7 @@ export type AuthUserPayload = {
   businessName: string | null;
   email: string | null;
   phone: string;
+  businessId?: string | null;
+  branchId?: string | null;
+  branchName?: string | null;
 };

@@ -5,6 +5,7 @@ import type { OnboardingRole } from "@/lib/auth/onboarding";
 
 const loginRoles: { role: OnboardingRole; label: string }[] = [
   { role: "business", label: "Business" },
+  { role: "branch_manager", label: "Manager" },
   { role: "customer", label: "Customer" },
   { role: "rider", label: "Rider" },
 ];

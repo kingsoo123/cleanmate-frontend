@@ -35,12 +35,18 @@ export function initialsFromBusinessName(name: string, fallback = "CM"): string 
 export function businessBrandFromUser(
   user: AuthUserPayload | null,
 ): BusinessBrand {
-  if (!user || user.role !== "business") {
+  if (
+    !user ||
+    (user.role !== "business" && user.role !== "branch_manager")
+  ) {
     return defaultBusinessBrand;
   }
 
   const businessName = user.businessName?.trim() || defaultBusinessBrand.businessName;
-  const ownerName = user.fullName.trim();
+  const ownerName =
+    user.role === "branch_manager" && user.branchName?.trim()
+      ? `${user.fullName.trim()} · ${user.branchName.trim()}`
+      : user.fullName.trim();
 
   return {
     businessName,

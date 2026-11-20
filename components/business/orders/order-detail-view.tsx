@@ -8,10 +8,8 @@ import type { BusinessOrderListRow } from "@/lib/business-dashboard/orders-types
 
 export function OrderDetailView({
   order,
-  isPreviewData,
 }: {
   order: BusinessOrderListRow;
-  isPreviewData: boolean;
 }) {
   return (
     <div className="mx-auto max-w-3xl space-y-6">
@@ -45,13 +43,6 @@ export function OrderDetailView({
         </div>
       </div>
 
-      {isPreviewData ? (
-        <p className="rounded-xl border border-brand/20 bg-brand-light/40 px-4 py-3 text-sm text-foreground">
-          <span className="font-semibold">Preview.</span> Processing actions,
-          line items, and payment recording will connect here in a later phase.
-        </p>
-      ) : null}
-
       <section className="rounded-2xl border border-border bg-surface p-5 shadow-sm sm:p-6">
         <h3 className="text-sm font-semibold text-foreground">Summary</h3>
         <dl className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -78,20 +69,14 @@ export function OrderDetailView({
         </dl>
       </section>
 
-      <div className="flex flex-wrap gap-3">
-        <span className="inline-flex cursor-not-allowed items-center rounded-full bg-brand-dark/50 px-5 py-2.5 text-sm font-semibold text-white">
-          Update status (soon)
-        </span>
-        <span className="inline-flex cursor-not-allowed items-center rounded-full border border-border bg-surface px-5 py-2.5 text-sm font-semibold text-muted">
-          Record payment (soon)
-        </span>
+      {order.outstandingNgn > 0 ? (
         <Link
           href="/business/payments"
           className="inline-flex items-center rounded-full border border-border bg-surface px-5 py-2.5 text-sm font-semibold text-foreground hover:bg-secondary-surface"
         >
-          Payments module
+          Record payment ({formatNgn(order.outstandingNgn)} due)
         </Link>
-      </div>
+      ) : null}
     </div>
   );
 }

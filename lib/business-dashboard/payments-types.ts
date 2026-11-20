@@ -4,6 +4,7 @@ export type PaymentRecordStatus = "Recorded" | "Pending verification";
 
 export type BusinessPaymentRecord = {
   id: string;
+  orderId: string;
   reference: string;
   orderNumber: string;
   customerName: string;

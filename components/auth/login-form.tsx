@@ -23,7 +23,7 @@ function validateLogin(data: FormData, role: OnboardingRole): FieldErrors | null
   const identifier = String(data.get("identifier") ?? "");
   const pin = String(data.get("pin") ?? "");
 
-  if (role === "rider") {
+  if (role === "rider" || role === "branch_manager") {
     const phone = identifier.trim();
     if (!phone) errors.identifier = "Phone number is required.";
     else if (!validatePhoneOrEmail(phone) && !/^\d[\d\s+\-()]+$/.test(phone)) {
@@ -47,12 +47,11 @@ export function LoginForm({ role }: { role: OnboardingRole }) {
   const [formError, setFormError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
-  const identifierLabel =
-    role === "rider" ? "Phone number" : "Phone number or email";
-  const identifierPlaceholder =
-    role === "rider"
-      ? "+234 800 000 0000"
-      : "+234 800 000 0000 or you@example.com";
+  const phoneOnlyRole = role === "rider" || role === "branch_manager";
+  const identifierLabel = phoneOnlyRole ? "Phone number" : "Phone number or email";
+  const identifierPlaceholder = phoneOnlyRole
+    ? "+234 800 000 0000"
+    : "+234 800 000 0000 or you@example.com";
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -117,10 +116,16 @@ export function LoginForm({ role }: { role: OnboardingRole }) {
           the business portal.
         </p>
       ) : null}
+      {role === "branch_manager" ? (
+        <p className="rounded-xl border border-border bg-secondary-surface/80 px-3 py-2.5 text-xs leading-relaxed text-muted">
+          Branch managers are added by the laundry owner under{" "}
+          <span className="font-medium text-foreground">Staff & riders</span>.
+        </p>
+      ) : null}
 
       <FormField
         name="identifier"
-        type={role === "rider" ? "tel" : "text"}
+        type={phoneOnlyRole ? "tel" : "text"}
         label={identifierLabel}
         placeholder={identifierPlaceholder}
         autoComplete="username"

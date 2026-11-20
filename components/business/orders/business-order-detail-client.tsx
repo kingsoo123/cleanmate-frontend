@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { OrderDetailView } from "@/components/business/orders/order-detail-view";
+import { UpdateOrderStatusForm } from "@/components/business/orders/update-order-status-form";
 import { AuthApiError } from "@/lib/auth/api-client";
 import { fetchBusinessOrder } from "@/lib/business-dashboard/operations-api";
 import type { BusinessOrderListRow } from "@/lib/business-dashboard/orders-types";
@@ -93,5 +94,10 @@ function BusinessOrderDetailContent() {
     );
   }
 
-  return <OrderDetailView order={order} isPreviewData={false} />;
+  return (
+    <div className="space-y-6">
+      <OrderDetailView order={order} />
+      <UpdateOrderStatusForm order={order} onUpdated={setOrder} />
+    </div>
+  );
 }

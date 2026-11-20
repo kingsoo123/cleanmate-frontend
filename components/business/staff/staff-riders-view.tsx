@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { BranchManagersPanel } from "@/components/business/staff/branch-managers-panel";
 import { OnboardRiderForm } from "@/components/business/staff/onboard-rider-form";
 import type { DispatchRider } from "@/lib/business-dashboard/riders-types";
 
@@ -43,15 +44,15 @@ export function StaffRidersView() {
   const [riders, setRiders] = useState(initialRiders);
 
   return (
-    <div className="mx-auto max-w-6xl space-y-8">
+    <div className="mx-auto max-w-6xl space-y-12">
+      <BranchManagersPanel />
+
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="text-sm font-medium text-brand">Team</p>
-          <h2 className="text-2xl font-bold text-foreground">Staff & dispatch riders</h2>
+          <p className="text-sm font-medium text-brand">Dispatch</p>
+          <h2 className="text-2xl font-bold text-foreground">Riders</h2>
           <p className="mt-1 max-w-2xl text-sm text-muted">
-            Onboard riders who handle customer pickups and deliveries. Internal
-            staff roles (front desk, laundry floor, manager) will be managed
-            here in a later update.
+            Onboard riders who handle customer pickups and deliveries.
           </p>
         </div>
         <Link

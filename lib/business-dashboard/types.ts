@@ -86,6 +86,41 @@ export type OperationalMetrics = {
   cancelled: number;
 };
 
+export type DashboardBarPoint = {
+  label: string;
+  value: number;
+};
+
+export type DashboardDailyPoint = {
+  label: string;
+  paymentsNgn: number;
+  ordersCreated: number;
+  ordersCompleted: number;
+};
+
+export type DashboardBranchInsight = {
+  label: string;
+  ordersCount: number;
+  paymentsNgn: number;
+};
+
+export type DashboardInsights = {
+  periodLabel: string;
+  daily: DashboardDailyPoint[];
+  ordersByStatus: Array<{ label: string; count: number }>;
+  paymentsByMethod: Array<{ label: string; amountNgn: number }>;
+  orderSources: Array<{ label: string; count: number }>;
+  branches?: DashboardBranchInsight[];
+  summary: {
+    paymentsTotalNgn: number;
+    ordersCreated: number;
+    ordersCompleted: number;
+    completionRatePercent: number;
+    avgOrderValueNgn: number;
+    collectionRatePercent: number;
+  };
+};
+
 export type BusinessDashboardData = {
   businessName: string;
   periodLabel: string;
@@ -96,6 +131,7 @@ export type BusinessDashboardData = {
   recentOrders: RecentOrderRow[];
   driverJobs: DriverJobRow[];
   recentPayments: PaymentRow[];
+  insights?: DashboardInsights;
   /** True when metrics are UI placeholders until the API is connected. */
   isPreviewData: boolean;
 };

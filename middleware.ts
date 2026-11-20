@@ -7,8 +7,19 @@ export function middleware(request: NextRequest) {
   }
 
   const role = request.nextUrl.searchParams.get("role");
-  if (role === "customer" || role === "rider" || role === "driver") {
-    const loginRole = role === "customer" ? "customer" : "rider";
+  if (
+    role === "customer" ||
+    role === "rider" ||
+    role === "driver" ||
+    role === "branch_manager" ||
+    role === "manager"
+  ) {
+    const loginRole =
+      role === "customer"
+        ? "customer"
+        : role === "branch_manager" || role === "manager"
+          ? "branch_manager"
+          : "rider";
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.searchParams.set("role", loginRole);

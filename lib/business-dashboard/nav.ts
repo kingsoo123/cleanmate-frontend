@@ -1,8 +1,37 @@
+import type { AuthUserPayload } from "@/lib/auth/types";
+
 export type BusinessNavItem = {
   label: string;
   href: string;
   description?: string;
 };
+
+const branchManagerNavHrefs = new Set([
+  "/business/dashboard",
+  "/business/orders",
+  "/business/orders/new",
+  "/business/notifications",
+]);
+
+export function businessNavForUser(
+  user: AuthUserPayload | null,
+): BusinessNavItem[] {
+  if (user?.role === "branch_manager") {
+    return businessNav.filter((item) => branchManagerNavHrefs.has(item.href));
+  }
+  return businessNav;
+}
+
+export function isBusinessPathAllowedForUser(
+  pathname: string,
+  user: AuthUserPayload | null,
+): boolean {
+  if (user?.role !== "branch_manager") return true;
+  if (pathname === "/business/dashboard") return true;
+  if (pathname.startsWith("/business/orders")) return true;
+  if (pathname.startsWith("/business/notifications")) return true;
+  return false;
+}
 
 export const businessNav: BusinessNavItem[] = [
   { label: "Dashboard", href: "/business/dashboard" },

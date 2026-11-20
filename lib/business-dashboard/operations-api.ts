@@ -1,5 +1,6 @@
 import { apiFetch } from "@/lib/api/http";
 import type { BusinessOrderListRow } from "@/lib/business-dashboard/orders-types";
+import type { OrderStatus } from "@/lib/business-dashboard/types";
 import type {
   CatalogService,
   CreatedWalkInOrderPreview,
@@ -45,6 +46,34 @@ export function fetchBusinessOrders() {
 
 export function fetchBusinessOrder(orderId: string) {
   return apiFetch<BusinessOrderListRow>(`/business/orders/${orderId}`);
+}
+
+export function updateBusinessOrderStatus(
+  orderId: string,
+  payload: { status: OrderStatus; processingStage?: string },
+) {
+  return apiFetch<BusinessOrderListRow>(`/business/orders/${orderId}`, {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  });
+}
+
+export type BulkOrderStatusResult = {
+  updated: BusinessOrderListRow[];
+  skipped: { orderId: string; orderNumber: string; reason: string }[];
+  updatedCount: number;
+  skippedCount: number;
+};
+
+export function bulkUpdateBusinessOrderStatus(payload: {
+  orderIds: string[];
+  status: OrderStatus;
+  processingStage?: string;
+}) {
+  return apiFetch<BulkOrderStatusResult>("/business/orders/bulk-status", {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  });
 }
 
 export function fetchNewOrderCatalog() {

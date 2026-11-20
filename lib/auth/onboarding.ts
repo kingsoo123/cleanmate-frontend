@@ -1,7 +1,12 @@
-export type OnboardingRole = "business" | "customer" | "rider";
+export type OnboardingRole =
+  | "business"
+  | "branch_manager"
+  | "customer"
+  | "rider";
 
 export function parseOnboardingRole(value: string | undefined): OnboardingRole {
   if (value === "business") return "business";
+  if (value === "branch_manager" || value === "manager") return "branch_manager";
   if (value === "rider" || value === "driver") return "rider";
   return "customer";
 }
@@ -30,6 +35,14 @@ export const onboardingCopy = {
     loginSubtitle:
       "Use the phone number and 6-digit PIN your laundry set when they onboarded you.",
   },
+  branch_manager: {
+    registerTitle: "Branch manager account",
+    registerSubtitle:
+      "Branch managers are added by the laundry owner—they do not self-register.",
+    loginTitle: "Branch manager sign in",
+    loginSubtitle:
+      "Use the phone number and 6-digit PIN your laundry owner set for your branch.",
+  },
 } as const satisfies Record<
   OnboardingRole,
   {
@@ -42,6 +55,7 @@ export const onboardingCopy = {
 
 export const loginDestinations: Record<OnboardingRole, string> = {
   business: "/business/dashboard",
+  branch_manager: "/business/dashboard",
   customer: "/customer/dashboard",
   rider: "/rider/dashboard",
 };

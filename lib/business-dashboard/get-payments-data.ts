@@ -66,6 +66,7 @@ const previewOutstanding: OutstandingOrderForPayment[] = [
 const previewPayments: BusinessPaymentRecord[] = [
   {
     id: "pay1",
+    orderId: "o3",
     reference: "PAY-8821",
     orderNumber: "LD-10479",
     customerName: "Fatima Yusuf",
@@ -78,6 +79,7 @@ const previewPayments: BusinessPaymentRecord[] = [
   },
   {
     id: "pay2",
+    orderId: "o2",
     reference: "PAY-8820",
     orderNumber: "LD-10480",
     customerName: "Tunde Bakare",
@@ -90,6 +92,7 @@ const previewPayments: BusinessPaymentRecord[] = [
   },
   {
     id: "pay3",
+    orderId: "o7",
     reference: "PAY-8818",
     orderNumber: "LD-10478",
     customerName: "Helen Chu",
@@ -102,6 +105,7 @@ const previewPayments: BusinessPaymentRecord[] = [
   },
   {
     id: "pay4",
+    orderId: "o1",
     reference: "PAY-8812",
     orderNumber: "LD-10482",
     customerName: "Ada Okonkwo",
@@ -114,6 +118,7 @@ const previewPayments: BusinessPaymentRecord[] = [
   },
   {
     id: "pay5",
+    orderId: "o4",
     reference: "PAY-8809",
     orderNumber: "LD-10477",
     customerName: "James Okafor",
@@ -126,6 +131,7 @@ const previewPayments: BusinessPaymentRecord[] = [
   },
   {
     id: "pay6",
+    orderId: "o8",
     reference: "PAY-8801",
     orderNumber: "LD-10460",
     customerName: "Grace Eze",
@@ -138,6 +144,7 @@ const previewPayments: BusinessPaymentRecord[] = [
   },
   {
     id: "pay7",
+    orderId: "o9",
     reference: "PAY-8795",
     orderNumber: "LD-10455",
     customerName: "Helen Chu",

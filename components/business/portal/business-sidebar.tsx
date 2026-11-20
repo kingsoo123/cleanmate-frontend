@@ -4,7 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LogoutButton } from "@/components/auth/logout-button";
 import { useBusinessBrand } from "@/components/business/portal/business-brand-provider";
-import { businessNav } from "@/lib/business-dashboard/nav";
+import { businessNavForUser } from "@/lib/business-dashboard/nav";
+import { useAuthUser } from "@/lib/auth/use-auth-user";
 
 function NavIcon({ href }: { href: string }) {
   const className = "h-5 w-5 shrink-0 opacity-80";
@@ -45,6 +46,8 @@ export function BusinessSidebar({
 }) {
   const pathname = usePathname();
   const brand = useBusinessBrand();
+  const user = useAuthUser();
+  const navItems = businessNavForUser(user);
 
   function isActive(href: string) {
     if (pathname === href) return true;
@@ -60,7 +63,7 @@ export function BusinessSidebar({
 
   const nav = (
     <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-3 py-4">
-      {businessNav.map((item) => {
+      {navItems.map((item) => {
         const active = isActive(item.href);
         return (
           <Link

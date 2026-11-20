@@ -1,11 +1,13 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { MetricCard } from "@/components/business/dashboard/metric-card";
+import { ViewOrderButton } from "@/components/business/orders/view-order-button";
 import {
   OrderStatusBadge,
   PaymentStateBadge,
 } from "@/components/business/status-badge";
 import { formatNgn, formatUpdatedAt } from "@/lib/business-dashboard/format";
+import { DashboardInsightsSection } from "@/components/business/dashboard/dashboard-insights-section";
 import type { BusinessDashboardData } from "@/lib/business-dashboard/types";
 
 function Panel({
@@ -31,9 +33,11 @@ function Panel({
 export function DashboardView({
   data,
   ownerName,
+  showBranchInsights = true,
 }: {
   data: BusinessDashboardData;
   ownerName?: string;
+  showBranchInsights?: boolean;
 }) {
   const { financial, operational } = data;
   const maxStage = Math.max(...data.processingStages.map((s) => s.count), 1);
@@ -125,6 +129,13 @@ export function DashboardView({
         </div>
       </div>
 
+      {data.insights ? (
+        <DashboardInsightsSection
+          insights={data.insights}
+          showBranches={showBranchInsights}
+        />
+      ) : null}
+
       <div className="grid gap-6 xl:grid-cols-5">
         <div className="xl:col-span-2">
           <Panel
@@ -164,6 +175,9 @@ export function DashboardView({
                         {formatNgn(order.outstandingNgn)} due
                       </span>
                     ) : null}
+                  </div>
+                  <div className="mt-3 flex justify-end">
+                    <ViewOrderButton orderId={order.id} />
                   </div>
                 </li>
               ))}
@@ -212,13 +226,14 @@ export function DashboardView({
                 <th className="pb-3 pr-4 font-medium">Status</th>
                 <th className="pb-3 pr-4 font-medium">Payment</th>
                 <th className="pb-3 pr-4 font-medium text-right">Total</th>
-                <th className="pb-3 font-medium text-right">Updated</th>
+                <th className="pb-3 pr-4 font-medium text-right">Updated</th>
+                <th className="pb-3 font-medium text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
               {data.recentOrders.map((row) => (
                 <tr key={row.id} className="hover:bg-secondary-surface/40">
-                  <td className="py-3 pr-4 font-mono text-xs font-semibold text-brand">
+                  <td className="py-3 pr-4 font-mono text-xs font-semibold text-foreground">
                     {row.orderNumber}
                   </td>
                   <td className="py-3 pr-4 font-mono text-xs font-semibold text-brand">
@@ -235,8 +250,11 @@ export function DashboardView({
                   <td className="py-3 pr-4 text-right font-medium">
                     {formatNgn(row.totalNgn)}
                   </td>
-                  <td className="py-3 text-right text-muted">
+                  <td className="py-3 pr-4 text-right text-muted">
                     {formatUpdatedAt(row.updatedAt)}
+                  </td>
+                  <td className="py-3 text-right">
+                    <ViewOrderButton orderId={row.id} />
                   </td>
                 </tr>
               ))}

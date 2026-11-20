@@ -7,6 +7,11 @@ import {
   OrderStatusBadge,
   PaymentStateBadge,
 } from "@/components/business/status-badge";
+import { BulkUpdateOrdersPanel } from "@/components/business/orders/bulk-update-orders-panel";
+import { ViewOrderButton } from "@/components/business/orders/view-order-button";
+import { AuthApiError } from "@/lib/auth/api-client";
+import { bulkUpdateBusinessOrderStatus } from "@/lib/business-dashboard/operations-api";
+import type { OrderStatus } from "@/lib/business-dashboard/types";
 import {
   formatNgn,
   formatUpdatedAt,
@@ -26,6 +31,12 @@ import type {
   OrderListFilter,
 } from "@/lib/business-dashboard/orders-types";
 
+const CLOSED_ORDER_STATUSES: OrderStatus[] = ["Completed", "Cancelled"];
+
+function isOrderOpenForBulkEdit(status: OrderStatus) {
+  return !CLOSED_ORDER_STATUSES.includes(status);
+}
+
 const filterTabs: { id: OrderListFilter; label: string }[] = [
   { id: "all", label: "All" },
   { id: "active", label: "Active" },
@@ -36,12 +47,18 @@ const filterTabs: { id: OrderListFilter; label: string }[] = [
 
 export function OrdersListView({
   orders,
+  onOrdersPatched,
 }: {
   orders: BusinessOrderListRow[];
+  onOrdersPatched?: (updatedRows: BusinessOrderListRow[]) => void;
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [query, setQuery] = useState("");
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
+  const [bulkPending, setBulkPending] = useState(false);
+  const [bulkError, setBulkError] = useState<string | null>(null);
+  const [bulkSummary, setBulkSummary] = useState<string | null>(null);
 
   const filter = parseOrderListFilter(
     searchParams.get("filter") ?? undefined,
@@ -64,6 +81,18 @@ export function OrdersListView({
     [filtered, pageFromUrl],
   );
   const pageOrders = pagination.items;
+  const selectableOnPage = pageOrders.filter((o) =>
+    isOrderOpenForBulkEdit(o.status),
+  );
+  const allOnPageSelected =
+    selectableOnPage.length > 0 &&
+    selectableOnPage.every((o) => selectedIds.has(o.id));
+
+  useEffect(() => {
+    setSelectedIds(new Set());
+    setBulkSummary(null);
+    setBulkError(null);
+  }, [filter, query]);
 
   useEffect(() => {
     if (pageFromUrl !== pagination.page) {
@@ -83,6 +112,88 @@ export function OrdersListView({
     router.replace(qs ? `/business/orders?${qs}` : "/business/orders", {
       scroll: false,
     });
+  }
+
+  function toggleSelected(orderId: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(orderId)) {
+        next.delete(orderId);
+      } else {
+        next.add(orderId);
+      }
+      return next;
+    });
+    setBulkSummary(null);
+  }
+
+  function toggleSelectAllOnPage() {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (allOnPageSelected) {
+        for (const order of selectableOnPage) {
+          next.delete(order.id);
+        }
+      } else {
+        for (const order of selectableOnPage) {
+          next.add(order.id);
+        }
+      }
+      return next;
+    });
+    setBulkSummary(null);
+  }
+
+  function clearSelection() {
+    setSelectedIds(new Set());
+    setBulkError(null);
+    setBulkSummary(null);
+  }
+
+  async function handleBulkApply(payload: {
+    status: OrderStatus;
+    processingStage: string;
+  }) {
+    const orderIds = [...selectedIds];
+    if (orderIds.length === 0) return;
+
+    setBulkPending(true);
+    setBulkError(null);
+    setBulkSummary(null);
+    try {
+      const result = await bulkUpdateBusinessOrderStatus({
+        orderIds,
+        status: payload.status,
+        processingStage: payload.processingStage || undefined,
+      });
+      onOrdersPatched?.(result.updated);
+      const parts = [
+        `Updated ${result.updatedCount} order${result.updatedCount === 1 ? "" : "s"}.`,
+      ];
+      if (result.skippedCount > 0) {
+        const detail = result.skipped
+          .slice(0, 3)
+          .map((s) => `${s.orderNumber}: ${s.reason}`)
+          .join(" · ");
+        parts.push(
+          `${result.skippedCount} skipped${detail ? ` (${detail}${result.skippedCount > 3 ? "…" : ""})` : ""}.`,
+        );
+      }
+      setBulkSummary(parts.join(" "));
+      setSelectedIds((prev) => {
+        const next = new Set(prev);
+        for (const row of result.updated) {
+          next.delete(row.id);
+        }
+        return next;
+      });
+    } catch (err) {
+      setBulkError(
+        err instanceof AuthApiError ? err.message : "Bulk update failed.",
+      );
+    } finally {
+      setBulkPending(false);
+    }
   }
 
   function setFilter(next: OrderListFilter) {
@@ -178,6 +289,16 @@ export function OrdersListView({
         })}
       </div>
 
+      <BulkUpdateOrdersPanel
+        selectedCount={selectedIds.size}
+        disabled={!onOrdersPatched}
+        onClear={clearSelection}
+        onApply={(payload) => void handleBulkApply(payload)}
+        pending={bulkPending}
+        error={bulkError}
+        resultSummary={bulkSummary}
+      />
+
       <div className="rounded-2xl border border-border bg-surface shadow-sm">
         {filtered.length === 0 ? (
           <div className="px-6 py-12 text-center">
@@ -200,14 +321,31 @@ export function OrdersListView({
           <>
             <div className="space-y-3 p-4 lg:hidden">
               {pageOrders.map((order) => (
-                <OrderCard key={order.id} order={order} />
+                <OrderCard
+                  key={order.id}
+                  order={order}
+                  selectable={isOrderOpenForBulkEdit(order.status)}
+                  selected={selectedIds.has(order.id)}
+                  onToggleSelect={() => toggleSelected(order.id)}
+                />
               ))}
             </div>
             <div className="hidden overflow-x-auto lg:block">
               <table className="w-full min-w-[960px] text-left text-sm">
                 <thead>
                   <tr className="border-b border-border text-xs uppercase tracking-wide text-muted">
-                    <th className="px-5 pb-3 pt-4 font-medium">Order</th>
+                    <th className="w-10 px-3 pb-3 pt-4 font-medium">
+                      <span className="sr-only">Select</span>
+                      <input
+                        type="checkbox"
+                        checked={allOnPageSelected}
+                        disabled={selectableOnPage.length === 0}
+                        onChange={toggleSelectAllOnPage}
+                        className="h-4 w-4 rounded border-border text-brand focus:ring-brand/30"
+                        aria-label="Select all orders on this page"
+                      />
+                    </th>
+                    <th className="px-3 pb-3 pt-4 font-medium">Order</th>
                     <th className="pb-3 pr-4 font-medium">Tag</th>
                     <th className="pb-3 pr-4 font-medium">Customer</th>
                     <th className="pb-3 pr-4 font-medium">Source</th>
@@ -215,8 +353,9 @@ export function OrdersListView({
                     <th className="pb-3 pr-4 font-medium">Status</th>
                     <th className="pb-3 pr-4 font-medium">Payment</th>
                     <th className="pb-3 pr-4 font-medium text-right">Total</th>
+                    <th className="pb-3 pr-4 font-medium text-right">Updated</th>
                     <th className="px-5 pb-3 pt-4 font-medium text-right">
-                      Updated
+                      Actions
                     </th>
                   </tr>
                 </thead>
@@ -224,9 +363,19 @@ export function OrdersListView({
                   {pageOrders.map((order) => (
                     <tr
                       key={order.id}
-                      className="group hover:bg-secondary-surface/40"
+                      className={`group hover:bg-secondary-surface/40 ${selectedIds.has(order.id) ? "bg-brand-light/25" : ""}`}
                     >
-                      <td className="px-5 py-3.5">
+                      <td className="px-3 py-3.5">
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.has(order.id)}
+                          disabled={!isOrderOpenForBulkEdit(order.status)}
+                          onChange={() => toggleSelected(order.id)}
+                          className="h-4 w-4 rounded border-border text-brand focus:ring-brand/30 disabled:opacity-40"
+                          aria-label={`Select ${order.orderNumber}`}
+                        />
+                      </td>
+                      <td className="px-3 py-3.5 sm:px-5">
                         <Link
                           href={`/business/orders/${order.id}`}
                           className="font-mono text-xs font-semibold text-brand hover:underline"
@@ -267,10 +416,13 @@ export function OrdersListView({
                         {formatNgn(order.totalNgn)}
                       </td>
                       <td
-                        className="px-5 py-3.5 text-right text-muted"
+                        className="py-3.5 pr-4 text-right text-muted"
                         title={formatUpdatedAtTitle(order.updatedAt)}
                       >
                         {formatUpdatedAt(order.updatedAt)}
+                      </td>
+                      <td className="px-5 py-3.5 text-right">
+                        <ViewOrderButton orderId={order.id} />
                       </td>
                     </tr>
                   ))}
@@ -334,12 +486,34 @@ function OrdersPagination({
   );
 }
 
-function OrderCard({ order }: { order: BusinessOrderListRow }) {
+function OrderCard({
+  order,
+  selectable,
+  selected,
+  onToggleSelect,
+}: {
+  order: BusinessOrderListRow;
+  selectable: boolean;
+  selected: boolean;
+  onToggleSelect: () => void;
+}) {
   return (
-    <Link
-      href={`/business/orders/${order.id}`}
-      className="block rounded-xl border border-border bg-secondary-surface/30 p-4 transition-colors hover:bg-secondary-surface/60"
+    <div
+      className={`rounded-xl border border-border p-4 ${selected ? "bg-brand-light/30" : "bg-secondary-surface/30"}`}
     >
+      <div className="flex items-start gap-3">
+        {selectable ? (
+          <input
+            type="checkbox"
+            checked={selected}
+            onChange={onToggleSelect}
+            className="mt-1 h-4 w-4 shrink-0 rounded border-border text-brand"
+            aria-label={`Select ${order.orderNumber}`}
+          />
+        ) : (
+          <span className="mt-1 w-4 shrink-0" aria-hidden />
+        )}
+        <div className="min-w-0 flex-1">
       <div className="flex items-start justify-between gap-2">
         <p className="font-mono text-sm font-semibold text-brand">
           {order.orderNumber}
@@ -359,6 +533,11 @@ function OrderCard({ order }: { order: BusinessOrderListRow }) {
           {formatNgn(order.totalNgn)}
         </span>
       </div>
-    </Link>
+      <div className="mt-3 flex justify-end">
+        <ViewOrderButton orderId={order.id} />
+      </div>
+        </div>
+      </div>
+    </div>
   );
 }

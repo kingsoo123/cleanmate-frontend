@@ -9,6 +9,7 @@ import {
 import { BusinessSidebar } from "@/components/business/portal/business-sidebar";
 import { BusinessTopbar } from "@/components/business/portal/business-topbar";
 import { PushNotificationsEnablePrompt } from "@/components/push-notifications-enable-prompt";
+import { BusinessPortalRouteGuard } from "@/components/business/portal/business-portal-route-guard";
 import { getBusinessNavTitle } from "@/lib/business-dashboard/nav";
 
 export function BusinessPortalLayout({
@@ -24,6 +25,7 @@ export function BusinessPortalLayout({
 
   return (
     <BusinessBrandProvider>
+      <BusinessPortalRouteGuard>
       <div className="flex min-h-screen bg-secondary-surface/50">
         <Suspense fallback={<BusinessSidebarFallback />}>
           <BusinessSidebar open={sidebarOpen} onClose={closeSidebar} />
@@ -50,6 +52,7 @@ export function BusinessPortalLayout({
           </main>
         </div>
       </div>
+      </BusinessPortalRouteGuard>
     </BusinessBrandProvider>
   );
 }

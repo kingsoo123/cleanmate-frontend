@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { AuthApiError } from "@/lib/auth/api-client";
 import { MetricCard } from "@/components/business/dashboard/metric-card";
+import { ViewOrderButton } from "@/components/business/orders/view-order-button";
 import { RecordPaymentForm } from "@/components/business/payments/record-payment-form";
 import { formatNgn, formatUpdatedAt } from "@/lib/business-dashboard/format";
 import { verifyBusinessPayment } from "@/lib/business-dashboard/payments-api";
@@ -213,21 +214,22 @@ function PaymentsListViewContent({
               ) : (
                 outstanding.map((order) => (
                   <li key={order.orderId}>
-                    <button
-                      type="button"
-                      onClick={() => setPreselectedOrderId(order.orderId)}
-                      className="flex w-full items-center justify-between gap-3 px-5 py-3 text-left hover:bg-secondary-surface/40"
-                    >
-                      <div>
+                    <div className="flex w-full items-center gap-3 px-5 py-3 hover:bg-secondary-surface/40">
+                      <button
+                        type="button"
+                        onClick={() => setPreselectedOrderId(order.orderId)}
+                        className="min-w-0 flex-1 text-left"
+                      >
                         <p className="font-mono text-xs font-semibold text-brand">
                           {order.orderNumber}
                         </p>
                         <p className="text-sm text-foreground">{order.customerName}</p>
-                      </div>
-                      <span className="text-sm font-semibold text-amber-900">
+                      </button>
+                      <span className="shrink-0 text-sm font-semibold text-amber-900">
                         {formatNgn(order.outstandingNgn)}
                       </span>
-                    </button>
+                      <ViewOrderButton orderId={order.orderId} />
+                    </div>
                   </li>
                 ))
               )}
@@ -287,13 +289,14 @@ function PaymentsListViewContent({
                 <th className="py-3 pr-4 font-medium">Method</th>
                 <th className="py-3 pr-4 font-medium">Status</th>
                 <th className="py-3 pr-4 font-medium text-right">Amount</th>
-                <th className="px-5 py-3 font-medium text-right">When</th>
+                <th className="py-3 pr-4 font-medium text-right">When</th>
+                <th className="px-5 py-3 font-medium text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
               {filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-5 py-12 text-center text-muted">
+                  <td colSpan={8} className="px-5 py-12 text-center text-muted">
                     No payments match.
                   </td>
                 </tr>
@@ -331,8 +334,11 @@ function PaymentsListViewContent({
                     <td className="py-3 pr-4 text-right font-semibold">
                       {formatNgn(payment.amountNgn)}
                     </td>
-                    <td className="px-5 py-3 text-right text-muted">
+                    <td className="py-3 pr-4 text-right text-muted">
                       {formatUpdatedAt(payment.recordedAt)}
+                    </td>
+                    <td className="px-5 py-3 text-right">
+                      <ViewOrderButton orderId={payment.orderId} />
                     </td>
                   </tr>
                 ))

@@ -18,8 +18,8 @@ export function ForgotPinForm({ role }: { role: OnboardingRole }) {
   const [pending, setPending] = useState(false);
   const [done, setDone] = useState(false);
 
-  const identifierLabel =
-    role === "rider" ? "Phone number" : "Phone number or email";
+  const phoneOnly = role === "rider" || role === "branch_manager";
+  const identifierLabel = phoneOnly ? "Phone number" : "Phone number or email";
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -33,7 +33,7 @@ export function ForgotPinForm({ role }: { role: OnboardingRole }) {
     const confirmPin = String(data.get("confirmPin") ?? "");
 
     const nextErrors: FieldErrors = {};
-    if (role === "rider") {
+    if (phoneOnly) {
       if (!identifier.trim()) nextErrors.identifier = "Phone number is required.";
     } else {
       const idError = validatePhoneOrEmail(identifier);
@@ -94,7 +94,7 @@ export function ForgotPinForm({ role }: { role: OnboardingRole }) {
 
       <FormField
         name="identifier"
-        type={role === "rider" ? "tel" : "text"}
+        type={phoneOnly ? "tel" : "text"}
         label={identifierLabel}
         autoComplete="username"
         error={errors.identifier}

@@ -13,6 +13,7 @@ export function saveAuthSession(accessToken: string, user: AuthUserPayload) {
   if (typeof window === "undefined") return;
   localStorage.setItem(TOKEN_KEY, accessToken);
   localStorage.setItem(USER_KEY, JSON.stringify(user));
+  cachedAuthUserKey = "";
   notifyAuthChange();
 }
 
@@ -32,10 +33,42 @@ export function getAuthUser(): AuthUserPayload | null {
   }
 }
 
+let cachedAuthUserSnapshot: AuthUserPayload | null = null;
+let cachedAuthUserKey = "";
+
+function authUserSnapshotKey(user: AuthUserPayload | null): string {
+  if (!user) return "";
+  return [
+    user.id,
+    user.role,
+    user.fullName,
+    user.businessName ?? "",
+    user.email ?? "",
+    user.phone,
+    user.businessId ?? "",
+    user.branchId ?? "",
+    user.branchName ?? "",
+  ].join("\0");
+}
+
+/** Stable reference for useSyncExternalStore when session data is unchanged. */
+export function getAuthUserSnapshot(): AuthUserPayload | null {
+  const next = getAuthUser();
+  const key = authUserSnapshotKey(next);
+  if (key === cachedAuthUserKey) {
+    return cachedAuthUserSnapshot;
+  }
+  cachedAuthUserKey = key;
+  cachedAuthUserSnapshot = next;
+  return cachedAuthUserSnapshot;
+}
+
 export function clearAuthSession() {
   if (typeof window === "undefined") return;
   localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(USER_KEY);
+  cachedAuthUserKey = "";
+  cachedAuthUserSnapshot = null;
   notifyAuthChange();
 }
 

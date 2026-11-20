@@ -6,6 +6,14 @@ import { AuthApiError } from "@/lib/auth/api-client";
 import { fetchBusinessOrders } from "@/lib/business-dashboard/operations-api";
 import type { BusinessOrderListRow } from "@/lib/business-dashboard/orders-types";
 
+function mergeOrderRows(
+  orders: BusinessOrderListRow[],
+  updated: BusinessOrderListRow[],
+): BusinessOrderListRow[] {
+  const byId = new Map(updated.map((row) => [row.id, row]));
+  return orders.map((row) => byId.get(row.id) ?? row);
+}
+
 export function BusinessOrdersClient() {
   const [orders, setOrders] = useState<BusinessOrderListRow[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -39,5 +47,12 @@ export function BusinessOrdersClient() {
     );
   }
 
-  return <OrdersListView orders={orders} />;
+  return (
+    <OrdersListView
+      orders={orders}
+      onOrdersPatched={(updated) =>
+        setOrders((prev) => mergeOrderRows(prev, updated))
+      }
+    />
+  );
 }
