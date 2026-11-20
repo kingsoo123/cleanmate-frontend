@@ -15,7 +15,28 @@ const withPWA = withPWAInit({
   extendDefaultRuntimeCaching: false,
   workboxOptions: {
     disableDevLogs: true,
-    runtimeCaching: [],
+    // Do not precache hashed CSS — stale SW + new HTML = 404 stylesheets (common on installed PWA / Android).
+    exclude: [/\.css$/],
+    runtimeCaching: [
+      {
+        urlPattern: ({ request }) => request.mode === "navigate",
+        handler: "NetworkFirst",
+        options: {
+          cacheName: "washuply-html",
+          networkTimeoutSeconds: 8,
+          expiration: { maxEntries: 16, maxAgeSeconds: 60 * 60 },
+        },
+      },
+      {
+        urlPattern: /\/_next\/static\/css\/.*/i,
+        handler: "NetworkFirst",
+        options: {
+          cacheName: "washuply-css",
+          networkTimeoutSeconds: 8,
+          expiration: { maxEntries: 32, maxAgeSeconds: 60 * 60 * 24 },
+        },
+      },
+    ],
   },
 });
 

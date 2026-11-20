@@ -167,19 +167,30 @@ export function OrdersListView({
         processingStage: payload.processingStage || undefined,
       });
       onOrdersPatched?.(result.updated);
-      const parts = [
-        `Updated ${result.updatedCount} order${result.updatedCount === 1 ? "" : "s"}.`,
-      ];
-      if (result.skippedCount > 0) {
+      if (result.updatedCount === 0 && result.skippedCount > 0) {
         const detail = result.skipped
-          .slice(0, 3)
           .map((s) => `${s.orderNumber}: ${s.reason}`)
           .join(" · ");
-        parts.push(
-          `${result.skippedCount} skipped${detail ? ` (${detail}${result.skippedCount > 3 ? "…" : ""})` : ""}.`,
+        setBulkError(
+          detail || "No orders were updated. Check selection and rules below.",
         );
+        setBulkSummary(null);
+      } else {
+        const parts = [
+          `Updated ${result.updatedCount} order${result.updatedCount === 1 ? "" : "s"}.`,
+        ];
+        if (result.skippedCount > 0) {
+          const detail = result.skipped
+            .slice(0, 3)
+            .map((s) => `${s.orderNumber}: ${s.reason}`)
+            .join(" · ");
+          parts.push(
+            `${result.skippedCount} skipped${detail ? ` (${detail}${result.skippedCount > 3 ? "…" : ""})` : ""}.`,
+          );
+        }
+        setBulkSummary(parts.join(" "));
+        setBulkError(null);
       }
-      setBulkSummary(parts.join(" "));
       setSelectedIds((prev) => {
         const next = new Set(prev);
         for (const row of result.updated) {
