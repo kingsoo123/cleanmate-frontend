@@ -43,12 +43,27 @@ export const viewport = {
   ],
 };
 
+const criticalFallbackCss = `
+  html, body { min-height: 100%; margin: 0; }
+  body {
+    background: #ebe8ff;
+    color: #12122e;
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    line-height: 1.5;
+  }
+  img, video { max-width: 100%; height: auto; }
+  a { color: #635bff; }
+`;
+
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
+      <head>
+        <style id="washuply-critical-fallback">{criticalFallbackCss}</style>
+      </head>
       <body className="flex min-h-full flex-col bg-background text-foreground">
         <FirebaseAnalytics />
         <PushNotificationsSetup />
