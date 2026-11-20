@@ -25,7 +25,8 @@ export function BusinessPortalLayout({
 
   return (
     <BusinessBrandProvider>
-      <BusinessPortalRouteGuard>
+      <Suspense fallback={null}>
+        <BusinessPortalRouteGuard>
       <div className="flex min-h-screen bg-secondary-surface/50">
         <Suspense fallback={<BusinessSidebarFallback />}>
           <BusinessSidebar open={sidebarOpen} onClose={closeSidebar} />
@@ -52,7 +53,8 @@ export function BusinessPortalLayout({
           </main>
         </div>
       </div>
-      </BusinessPortalRouteGuard>
+        </BusinessPortalRouteGuard>
+      </Suspense>
     </BusinessBrandProvider>
   );
 }
