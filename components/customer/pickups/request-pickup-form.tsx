@@ -1,11 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FormField } from "@/components/auth/form-field";
 import { PickupStatusBadge } from "@/components/business/pickups/pickup-status-badge";
 import { AuthApiError } from "@/lib/auth/api-client";
-import { createCustomerPickup } from "@/lib/customer-dashboard/customer-api";
+import {
+  createCustomerAddress,
+  createCustomerPickup,
+} from "@/lib/customer-dashboard/customer-api";
 import type { CustomerSavedAddress } from "@/lib/customer-dashboard/customer-addresses";
 
 const timeWindows = [
@@ -17,10 +20,18 @@ const timeWindows = [
 
 export function RequestPickupForm({
   addresses,
+  onAddressesChange,
 }: {
   addresses: CustomerSavedAddress[];
+  onAddressesChange: (next: CustomerSavedAddress[]) => void;
 }) {
   const [addressId, setAddressId] = useState(addresses[0]?.id ?? "");
+  const [showNewAddress, setShowNewAddress] = useState(addresses.length === 0);
+  const [newLabel, setNewLabel] = useState("");
+  const [newLine, setNewLine] = useState("");
+  const [newAddressErrors, setNewAddressErrors] = useState<Record<string, string>>(
+    {},
+  );
   const [timeWindow, setTimeWindow] = useState(timeWindows[1] ?? timeWindows[0]);
   const [itemsDescription, setItemsDescription] = useState("");
   const [notes, setNotes] = useState("");
@@ -28,11 +39,72 @@ export function RequestPickupForm({
   const [submittedRef, setSubmittedRef] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  const [savingAddress, setSavingAddress] = useState(false);
+
+  useEffect(() => {
+    if (addressId && addresses.some((a) => a.id === addressId)) {
+      return;
+    }
+    setAddressId(addresses[0]?.id ?? "");
+    if (addresses.length === 0) {
+      setShowNewAddress(true);
+    }
+  }, [addresses, addressId]);
+
+  async function saveNewAddress(): Promise<string | null> {
+    const label = newLabel.trim();
+    const line = newLine.trim();
+    const nextErrors: Record<string, string> = {};
+    if (!label) nextErrors.label = "Label is required (e.g. Home).";
+    if (!line) nextErrors.line = "Street address is required.";
+    if (Object.keys(nextErrors).length) {
+      setNewAddressErrors(nextErrors);
+      return null;
+    }
+    setNewAddressErrors({});
+    setSavingAddress(true);
+    try {
+      const created = await createCustomerAddress({ label, line });
+      onAddressesChange([...addresses, created]);
+      setAddressId(created.id);
+      setNewLabel("");
+      setNewLine("");
+      setShowNewAddress(false);
+      return created.id;
+    } catch (error) {
+      setNewAddressErrors({
+        line:
+          error instanceof AuthApiError
+            ? error.message
+            : "Could not save address.",
+      });
+      return null;
+    } finally {
+      setSavingAddress(false);
+    }
+  }
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
     const nextErrors: Record<string, string> = {};
-    if (!addressId) nextErrors.addressId = "Choose a pickup address.";
+    let useAddressId = addressId;
+
+    if (!useAddressId && showNewAddress && (newLabel.trim() || newLine.trim())) {
+      const savedId = await saveNewAddress();
+      if (savedId) {
+        useAddressId = savedId;
+      }
+    }
+
+    if (!useAddressId) {
+      if (showNewAddress) {
+        if (!newLabel.trim()) nextErrors.newLabel = "Label is required.";
+        if (!newLine.trim()) nextErrors.newLine = "Address is required.";
+      }
+      if (!nextErrors.newLabel && !nextErrors.newLine) {
+        nextErrors.addressId = "Choose a saved address or add a new one.";
+      }
+    }
     if (!itemsDescription.trim()) {
       nextErrors.itemsDescription = "Describe what we should collect.";
     }
@@ -45,7 +117,7 @@ export function RequestPickupForm({
     setPending(true);
     try {
       const pickup = await createCustomerPickup({
-        addressId,
+        addressId: useAddressId,
         scheduledFor: timeWindow,
         estimatedItems: itemsDescription.trim(),
         ...(notes.trim() ? { customerNotes: notes.trim() } : {}),
@@ -113,39 +185,100 @@ export function RequestPickupForm({
             {formError}
           </p>
         ) : null}
-        <div className="space-y-1.5">
-          <label
-            htmlFor="addressId"
-            className="block text-sm font-medium text-foreground"
-          >
-            Pickup address <span className="text-brand">*</span>
-          </label>
-          <select
-            id="addressId"
-            name="addressId"
-            value={addressId}
-            onChange={(e) => setAddressId(e.target.value)}
-            className={`w-full rounded-xl border bg-surface px-3.5 py-2.5 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 ${
-              errors.addressId ? "border-red-400" : "border-border"
-            }`}
-          >
-            {addresses.map((addr) => (
-              <option key={addr.id} value={addr.id}>
-                {addr.label} — {addr.line}
-              </option>
-            ))}
-          </select>
-          {errors.addressId ? (
-            <p className="text-xs text-red-600">{errors.addressId}</p>
-          ) : null}
-          <p className="text-xs text-muted">
-            Manage addresses in{" "}
-            <Link href="/customer/profile" className="font-medium text-brand hover:underline">
-              Profile
-            </Link>
-            .
-          </p>
-        </div>
+
+        <p className="text-sm text-muted">
+          Pick a saved address or add a new pickup location on this page — no need
+          to visit Profile first.
+        </p>
+
+        {addresses.length > 0 ? (
+          <div className="space-y-1.5">
+            <label
+              htmlFor="addressId"
+              className="block text-sm font-medium text-foreground"
+            >
+              Saved pickup address <span className="text-brand">*</span>
+            </label>
+            <select
+              id="addressId"
+              name="addressId"
+              value={addressId}
+              onChange={(e) => setAddressId(e.target.value)}
+              className={`w-full rounded-xl border bg-surface px-3.5 py-2.5 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 ${
+                errors.addressId ? "border-red-400" : "border-border"
+              }`}
+            >
+              {addresses.map((addr) => (
+                <option key={addr.id} value={addr.id}>
+                  {addr.label} — {addr.line}
+                </option>
+              ))}
+            </select>
+            {errors.addressId ? (
+              <p className="text-xs text-red-600">{errors.addressId}</p>
+            ) : null}
+            {!showNewAddress ? (
+              <button
+                type="button"
+                onClick={() => setShowNewAddress(true)}
+                className="text-xs font-semibold text-brand hover:underline"
+              >
+                + Add a different pickup address
+              </button>
+            ) : null}
+          </div>
+        ) : null}
+
+        {showNewAddress ? (
+          <div className="space-y-4 rounded-xl border border-border bg-secondary-surface/30 p-4">
+            <p className="text-sm font-semibold text-foreground">
+              {addresses.length === 0 ? "Pickup address" : "New pickup address"}
+              <span className="text-brand"> *</span>
+            </p>
+            <FormField
+              name="newLabel"
+              label="Label"
+              required
+              value={newLabel}
+              onChange={(e) => setNewLabel(e.target.value)}
+              error={newAddressErrors.label ?? errors.newLabel}
+              placeholder="e.g. Home, Office"
+            />
+            <FormField
+              name="newLine"
+              label="Street address"
+              required
+              value={newLine}
+              onChange={(e) => setNewLine(e.target.value)}
+              error={newAddressErrors.line ?? errors.newLine}
+              placeholder="Street, area, city, landmark…"
+            />
+            <div className="flex flex-wrap gap-2">
+              <button
+                type="button"
+                disabled={savingAddress}
+                onClick={() => void saveNewAddress()}
+                className="rounded-full border border-border bg-surface px-4 py-2 text-xs font-semibold text-foreground hover:bg-secondary-surface disabled:opacity-60"
+              >
+                {savingAddress ? "Saving…" : "Save address"}
+              </button>
+              {addresses.length > 0 ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowNewAddress(false);
+                    setNewLabel("");
+                    setNewLine("");
+                    setNewAddressErrors({});
+                  }}
+                  className="rounded-full px-4 py-2 text-xs font-semibold text-muted hover:text-foreground"
+                >
+                  Cancel
+                </button>
+              ) : null}
+            </div>
+          </div>
+        ) : null}
 
         <div className="space-y-1.5">
           <label

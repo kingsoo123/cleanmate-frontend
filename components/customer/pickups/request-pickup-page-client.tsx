@@ -38,25 +38,17 @@ export function RequestPickupPageClient() {
     return <p className="text-sm text-muted">Loading…</p>;
   }
 
-  if (error) {
-    return (
-      <p className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
-        {error}
-      </p>
-    );
-  }
-
-  if (addresses.length === 0) {
-    return (
-      <p className="rounded-xl border border-border bg-secondary-surface/80 px-4 py-3 text-sm text-muted">
-        Add a pickup address in{" "}
-        <a href="/customer/profile" className="font-semibold text-brand hover:underline">
-          Profile
-        </a>{" "}
-        before scheduling a collection.
-      </p>
-    );
-  }
-
-  return <RequestPickupForm addresses={addresses} />;
+  return (
+    <>
+      {error ? (
+        <p className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900" role="status">
+          {error} You can still add a new address below.
+        </p>
+      ) : null}
+      <RequestPickupForm
+        addresses={addresses}
+        onAddressesChange={setAddresses}
+      />
+    </>
+  );
 }
