@@ -106,8 +106,8 @@ export function CustomerOrderDetailView({ order }: { order: CustomerOrderRow }) 
           className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900"
           role="status"
         >
-          Quotation approved (preview). Initial payment can be recorded by your
-          laundry or via Pay below when connected.
+          Quotation approved. Your laundry will record payment or you can pay the
+          balance from Payments.
         </p>
       ) : null}
 

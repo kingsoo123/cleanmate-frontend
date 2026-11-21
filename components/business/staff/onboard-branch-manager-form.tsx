@@ -102,7 +102,7 @@ export function OnboardBranchManagerForm({
         <FormField
           name="fullName"
           label="Full name"
-          placeholder="Ada Okafor"
+          placeholder="Full name"
           error={errors.fullName}
         />
 

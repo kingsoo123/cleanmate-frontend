@@ -45,13 +45,6 @@ export function CustomerDashboardView({ data }: { data: CustomerDashboardData })
         </p>
       </div>
 
-      {data.isPreviewData ? (
-        <p className="rounded-xl border border-brand/20 bg-brand-light/40 px-4 py-3 text-sm text-foreground">
-          <span className="font-semibold">Preview layout.</span> Orders and
-          payments below are sample data until your account is linked to your
-          laundry.
-        </p>
-      ) : null}
 
       <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
         <Link

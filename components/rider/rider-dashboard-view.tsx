@@ -80,7 +80,6 @@ export function RiderDashboardView({ initialData }: { initialData: RiderDashboar
       {completedCount > 0 ? (
         <p className="text-center text-xs text-muted">
           {completedCount} job{completedCount === 1 ? "" : "s"} completed today
-          (preview)
         </p>
       ) : null}
 

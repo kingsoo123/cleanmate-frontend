@@ -4,50 +4,18 @@ import type {
   RiderJobStage,
 } from "@/lib/rider-dashboard/types";
 
-/** Replace with API scoped to signed-in rider when auth is connected. */
+/** Server placeholder until rider jobs API is connected. */
 export async function getRiderDashboardData(): Promise<RiderDashboardData> {
   return {
     session: {
-      riderId: "r1",
-      riderName: "Emeka Duru",
-      laundryName: "Sunbright Laundry & Dry Clean",
-      dateLabel: "Today · 17 Oct 2026",
+      riderId: "",
+      riderName: "",
+      laundryName: "",
+      dateLabel: "—",
     },
-    jobs: previewRiderJobs,
+    jobs: [],
   };
 }
-
-/** Preview: Emeka has one active pickup en route + delivery queued. */
-const previewRiderJobs: RiderJob[] = [
-  {
-    id: "job-pu1",
-    kind: "Pickup",
-    reference: "PU-2214",
-    orderNumber: null,
-    customerName: "Ada Okonkwo",
-    customerPhone: "+234 803 222 3344",
-    address: "12 Admiralty Way, Lekki Phase 1",
-    scheduledFor: "Today · 2:00 – 4:00 PM",
-    itemsSummary: "~2 bags · wash & iron",
-    customerNotes: "Call on arrival — gate code 4421",
-    collectCashNgn: 0,
-    stage: "en_route",
-  },
-  {
-    id: "job-del4",
-    kind: "Delivery",
-    reference: "DEL-3295",
-    orderNumber: "LD-10448",
-    customerName: "Yemi Alade",
-    customerPhone: "+234 811 555 4433",
-    address: "Surulere — 14 Bode Thomas",
-    scheduledFor: "Today · 3:00 – 5:00 PM",
-    itemsSummary: "Dry clean · agbada",
-    customerNotes: null,
-    collectCashNgn: 0,
-    stage: "assigned",
-  },
-];
 
 export function getActiveRiderJob(jobs: RiderJob[]): RiderJob | null {
   return jobs.find((job) => job.stage !== "completed") ?? null;
@@ -60,9 +28,7 @@ export function getUpcomingRiderJobs(
   return jobs.filter((job) => job.id !== activeId && job.stage !== "completed");
 }
 
-export function nextStage(
-  job: RiderJob,
-): RiderJobStage | null {
+export function nextStage(job: RiderJob): RiderJobStage | null {
   switch (job.stage) {
     case "assigned":
       return "en_route";

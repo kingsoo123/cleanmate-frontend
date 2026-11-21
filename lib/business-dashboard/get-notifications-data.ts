@@ -62,14 +62,14 @@ export async function getBusinessNotificationsData(): Promise<NotificationsData>
         channel: "sms",
         subject: null,
         bodyPreview:
-          "Hi {{name}}, your order {{orderNumber}} is ready at Sunbright Laundry. Balance due: {{balance}}. Reply or call us to arrange collection.",
+          "Hi {{name}}, your order {{orderNumber}} is ready at {{businessName}}. Balance due: {{balance}}. Reply or call us to arrange collection.",
       },
       {
         eventId: "order_ready",
         channel: "email",
         subject: "Your laundry is ready — {{orderNumber}}",
         bodyPreview:
-          "Hello {{name}},\n\nYour items are ready. Total {{total}}, amount paid {{paid}}, balance {{balance}}.\n\nSunbright Laundry & Dry Clean",
+          "Hello {{name}},\n\nYour items are ready. Total {{total}}, amount paid {{paid}}, balance {{balance}}.\n\n{{businessName}}",
       },
       {
         eventId: "quotation_sent",
@@ -86,7 +86,7 @@ export async function getBusinessNotificationsData(): Promise<NotificationsData>
           "Your order {{orderNumber}} is on the way with {{riderName}}. ETA {{window}}.",
       },
     ],
-    log: previewLog,
+    log: [],
     inbox: {
       unreadCount: 0,
       items: [],
@@ -94,78 +94,6 @@ export async function getBusinessNotificationsData(): Promise<NotificationsData>
   };
 }
 
-const previewLog: NotificationLogEntry[] = [
-  {
-    id: "n1",
-    sentAt: "Today · 10:44",
-    eventLabel: "Order ready",
-    channel: "sms",
-    recipient: "+234 803 *** 3344",
-    customerName: "Ada Okonkwo",
-    status: "Sent",
-    detail: "LD-10482",
-  },
-  {
-    id: "n2",
-    sentAt: "Today · 10:05",
-    eventLabel: "Payment received",
-    channel: "sms",
-    recipient: "+234 807 *** 6677",
-    customerName: "Tunde Bakare",
-    status: "Sent",
-    detail: "₦10,000 · LD-10480",
-  },
-  {
-    id: "n3",
-    sentAt: "Today · 09:52",
-    eventLabel: "Payment received",
-    channel: "email",
-    recipient: "fatima.y@gmail.com",
-    customerName: "Fatima Yusuf",
-    status: "Sent",
-    detail: "Receipt LD-10479",
-  },
-  {
-    id: "n4",
-    sentAt: "Today · 09:30",
-    eventLabel: "Out for delivery",
-    channel: "sms",
-    recipient: "+234 809 *** 4567",
-    customerName: "James Okafor",
-    status: "Sent",
-    detail: "LD-10477",
-  },
-  {
-    id: "n5",
-    sentAt: "Today · 08:15",
-    eventLabel: "Pickup scheduled",
-    channel: "sms",
-    recipient: "+234 803 *** 3344",
-    customerName: "Ada Okonkwo",
-    status: "Queued",
-    detail: "PU-2214 · Emeka D.",
-  },
-  {
-    id: "n6",
-    sentAt: "Yesterday · 16:00",
-    eventLabel: "Quotation sent",
-    channel: "sms",
-    recipient: "+234 816 *** 2211",
-    customerName: "Blessing Adeyemi",
-    status: "Failed",
-    detail: "Gateway timeout — retry pending",
-  },
-  {
-    id: "n7",
-    sentAt: "Yesterday · 11:02",
-    eventLabel: "Order ready",
-    channel: "email",
-    recipient: "blessing.a@corp.ng",
-    customerName: "Blessing Adeyemi",
-    status: "Sent",
-    detail: "LD-10475",
-  },
-];
 
 export function parseNotificationLogFilter(
   value: string | undefined,

@@ -70,8 +70,7 @@ export function OnboardRiderForm({
           className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-900"
           role="status"
         >
-          Rider saved on this device (preview). Connect the API to persist accounts
-          and send login details securely.
+          Rider added. They can sign in with their phone number and PIN.
         </p>
       ) : null}
 

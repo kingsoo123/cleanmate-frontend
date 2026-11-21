@@ -5,7 +5,7 @@ export async function getCustomerDashboardData(): Promise<CustomerDashboardData>
   return {
     customerName: "Customer",
     preferredLaundry: "Your laundry",
-    isPreviewData: true,
+    isPreviewData: false,
     summary: {
       activeOrders: 0,
       readyOrders: 0,

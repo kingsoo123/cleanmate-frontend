@@ -396,10 +396,6 @@ function DeliveryDetailPanel({
         </div>
       )}
 
-      <p className="mt-6 text-xs text-muted">
-        Updates are stored on this device (preview) until the delivery API is
-        connected.
-      </p>
     </div>
   );
 }

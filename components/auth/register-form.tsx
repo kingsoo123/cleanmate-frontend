@@ -117,7 +117,7 @@ export function RegisterForm() {
       <FormField
         name="businessName"
         label="Business name"
-        placeholder="e.g. Sunbright Laundry & Dry Clean"
+        placeholder="e.g. Your Laundry & Dry Clean"
         autoComplete="organization"
         required
         error={errors.businessName}

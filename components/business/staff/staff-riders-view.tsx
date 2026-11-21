@@ -6,26 +6,7 @@ import { BranchManagersPanel } from "@/components/business/staff/branch-managers
 import { OnboardRiderForm } from "@/components/business/staff/onboard-rider-form";
 import type { DispatchRider } from "@/lib/business-dashboard/riders-types";
 
-const initialRiders: DispatchRider[] = [
-  {
-    id: "r1",
-    fullName: "Emeka Duru",
-    phone: "+234 803 111 2233",
-    vehicleLabel: "Motorcycle · LND-482KA",
-    status: "On job",
-    jobsToday: 4,
-    onboardedAt: "2026-09-01",
-  },
-  {
-    id: "r2",
-    fullName: "Samuel Kola",
-    phone: "+234 807 444 5566",
-    vehicleLabel: "Van · GGE-901LM",
-    status: "Active",
-    jobsToday: 2,
-    onboardedAt: "2026-09-12",
-  },
-];
+const initialRiders: DispatchRider[] = [];
 
 function StatusPill({ status }: { status: DispatchRider["status"] }) {
   const styles = {

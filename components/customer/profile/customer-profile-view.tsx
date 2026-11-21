@@ -139,7 +139,7 @@ export function CustomerProfileView({
             className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-900"
             role="status"
           >
-            Profile updated on this device (preview).
+            Profile updated.
           </p>
         ) : null}
 
@@ -188,8 +188,7 @@ export function CustomerProfileView({
             className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-900"
             role="status"
           >
-            PIN updated on this device (preview). Connect the API to persist
-            securely.
+            PIN updated.
           </p>
         ) : null}
 
@@ -246,7 +245,7 @@ export function CustomerProfileView({
 
         {addressSaved ? (
           <p className="mt-4 text-sm text-emerald-800" role="status">
-            Address added (preview).
+            Address saved.
           </p>
         ) : null}
 

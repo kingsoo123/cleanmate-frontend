@@ -82,24 +82,9 @@ export function getCustomerById(
   return customers.find((c) => c.id === id);
 }
 
-/** Preview order history shown on customer detail. */
+/** Placeholder until customer order history is loaded from the API. */
 export function getCustomerRecentOrders(
-  customerId: string,
+  _customerId: string,
 ): { orderNumber: string; status: string; totalNgn: number; updatedAt: string }[] {
-  const byCustomer: Record<
-    string,
-    { orderNumber: string; status: string; totalNgn: number; updatedAt: string }[]
-  > = {
-    c1: [
-      { orderNumber: "LD-10482", status: "Ready", totalNgn: 45_000, updatedAt: "Today" },
-      { orderNumber: "LD-10480", status: "In Progress", totalNgn: 18_500, updatedAt: "Mon" },
-    ],
-    c5: [
-      { orderNumber: "LD-10475", status: "Awaiting Customer Approval", totalNgn: 38_000, updatedAt: "Today" },
-      { orderNumber: "LD-10471", status: "Awaiting Customer Approval", totalNgn: 32_500, updatedAt: "Yesterday" },
-    ],
-  };
-  return byCustomer[customerId] ?? [
-    { orderNumber: "LD-10400", status: "Completed", totalNgn: 22_000, updatedAt: "Last week" },
-  ];
+  return [];
 }

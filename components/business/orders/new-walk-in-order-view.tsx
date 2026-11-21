@@ -741,10 +741,6 @@ function OrderCreatedSuccess({
             <dd className="font-semibold">{formatNgn(created.outstandingNgn)}</dd>
           </div>
         </dl>
-        <p className="mt-4 text-xs text-muted">
-          Saved on this device only (preview). Connect the API to persist orders
-          and sync with the orders list.
-        </p>
       </div>
       <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
         <Link

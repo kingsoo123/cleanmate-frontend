@@ -1,14 +1,13 @@
-import { previewCustomerOrders } from "@/lib/customer-dashboard/customer-orders-preview";
 import type { CustomerOrderRow } from "@/lib/customer-dashboard/types";
 import type { OrderStatus } from "@/lib/business-dashboard/types";
 
 export type CustomerOrderListFilter = "all" | "active" | "ready" | "action";
 
-/** Replace with API/DB when customer auth is connected. */
+/** Server placeholder; client loads via JWT. */
 export async function getCustomerOrdersData(): Promise<{
   orders: CustomerOrderRow[];
 }> {
-  return { orders: previewCustomerOrders };
+  return { orders: [] };
 }
 
 const activeStatuses: OrderStatus[] = [

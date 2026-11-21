@@ -460,10 +460,6 @@ function PickupDetailPanel({
         </div>
       )}
 
-      <p className="mt-6 text-xs text-muted">
-        Status changes are saved on this device (preview) until the pickup API is
-        connected.
-      </p>
     </div>
   );
 }

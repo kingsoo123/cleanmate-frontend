@@ -5,107 +5,14 @@ import type {
   DeliveryListFilter,
 } from "@/lib/business-dashboard/deliveries-types";
 
-/** Replace with API/DB when delivery jobs are connected. */
+/** Server placeholder until delivery jobs API is connected. */
 export async function getBusinessDeliveriesData(): Promise<{
   deliveries: BusinessDeliveryJob[];
   riders: DeliveryAssignRider[];
 }> {
-  return {
-    riders: [
-      { id: "r1", fullName: "Emeka Duru", status: "On job" },
-      { id: "r2", fullName: "Samuel Kola", status: "Active" },
-    ],
-    deliveries: previewDeliveries,
-  };
+  return { deliveries: [], riders: [] };
 }
 
-const previewDeliveries: BusinessDeliveryJob[] = [
-  {
-    id: "del1",
-    reference: "DEL-3301",
-    orderNumber: "LD-10477",
-    customerName: "James Okafor",
-    customerPhone: "+234 809 123 4567",
-    deliveryAddress: "18 Bourdillon Road, Ikoyi",
-    scheduledFor: "Today · 10:30 – 12:30",
-    itemsSummary: "1 box · wash & fold",
-    paymentState: "Fully Paid",
-    collectOnDeliveryNgn: 0,
-    status: "Out for Delivery",
-    assignedRiderId: "r2",
-    assignedRiderName: "Samuel Kola",
-    driverNotes: "Call before arrival",
-    updatedAt: "09:30",
-  },
-  {
-    id: "del2",
-    reference: "DEL-3302",
-    orderNumber: "LD-10482",
-    customerName: "Ada Okonkwo",
-    customerPhone: "+234 803 222 3344",
-    deliveryAddress: "12 Admiralty Way, Lekki Phase 1",
-    scheduledFor: "Today · 2:00 – 4:00 PM",
-    itemsSummary: "2 bags · wash & iron",
-    paymentState: "Partially Paid",
-    collectOnDeliveryNgn: 15_000,
-    status: "Pending Assignment",
-    assignedRiderId: null,
-    assignedRiderName: null,
-    driverNotes: "",
-    updatedAt: "10:42",
-  },
-  {
-    id: "del3",
-    reference: "DEL-3298",
-    orderNumber: "LD-10455",
-    customerName: "Helen Chu",
-    customerPhone: "+234 805 999 1122",
-    deliveryAddress: "Banana Island — Phase 2",
-    scheduledFor: "Yesterday · Evening",
-    itemsSummary: "Regular wash",
-    paymentState: "Fully Paid",
-    collectOnDeliveryNgn: 0,
-    status: "Delivered",
-    assignedRiderId: "r1",
-    assignedRiderName: "Emeka Duru",
-    driverNotes: "Handed to security",
-    updatedAt: "Yesterday 19:10",
-  },
-  {
-    id: "del4",
-    reference: "DEL-3295",
-    orderNumber: "LD-10448",
-    customerName: "Yemi Alade",
-    customerPhone: "+234 811 555 4433",
-    deliveryAddress: "Surulere — 14 Bode Thomas",
-    scheduledFor: "Mon · 3:00 – 5:00 PM",
-    itemsSummary: "Dry clean · agbada",
-    paymentState: "Fully Paid",
-    collectOnDeliveryNgn: 0,
-    status: "Driver Assigned",
-    assignedRiderId: "r1",
-    assignedRiderName: "Emeka Duru",
-    driverNotes: "",
-    updatedAt: "08:15",
-  },
-  {
-    id: "del5",
-    reference: "DEL-3290",
-    orderNumber: "LD-10440",
-    customerName: "Michael Obi",
-    customerPhone: "+234 708 222 3344",
-    deliveryAddress: "Ajah — Sangotedo",
-    scheduledFor: "Fri · Morning",
-    itemsSummary: "Express delivery",
-    paymentState: "Unpaid",
-    collectOnDeliveryNgn: 41_000,
-    status: "Failed Attempt",
-    assignedRiderId: "r2",
-    assignedRiderName: "Samuel Kola",
-    driverNotes: "Customer unavailable — reschedule",
-    updatedAt: "Last week",
-  },
-];
 
 const inProgressStatuses: DeliveryJobStatus[] = [
   "Driver Assigned",

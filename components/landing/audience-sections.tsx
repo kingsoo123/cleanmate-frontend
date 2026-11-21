@@ -81,10 +81,10 @@ export function AudienceSections() {
             <div className="rounded-2xl border border-border bg-surface p-5 sm:p-6">
               <div className="space-y-3 rounded-xl bg-brand-light/60 p-4 font-mono text-xs text-muted">
                 <p>
-                  <span className="font-semibold text-brand">LD-10482</span> ·
+                  <span className="font-semibold text-brand">LD-10042</span> ·
                   Active · Ironing
                 </p>
-                <p>Outstanding: ₦15,000 · Pickup driver: assigned</p>
+                <p>Outstanding: ₦12,500 · Pickup driver: assigned</p>
                 <p className="text-foreground/90">
                   QC passed · Ready for customer collection
                 </p>
