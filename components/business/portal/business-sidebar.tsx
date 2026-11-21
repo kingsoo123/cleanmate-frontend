@@ -52,14 +52,22 @@ export function BusinessSidebar({
   const navItems = businessNavForUser(user);
   const drawerViewport = useDrawerViewport();
   const panelRef = useRef<HTMLElement>(null);
+  const prevPathnameRef = useRef(pathname);
 
   useEffect(() => {
-    if (!open || !drawerViewport) return;
+    if (!open) return;
 
-    function dismiss(event: MouseEvent | TouchEvent) {
+    function dismiss(event: MouseEvent) {
+      if (window.matchMedia("(min-width: 1280px)").matches) return;
       const target = event.target;
       if (!(target instanceof Node)) return;
       if (panelRef.current?.contains(target)) return;
+      if (
+        target instanceof Element &&
+        target.closest("[data-sidebar-backdrop]")
+      ) {
+        return;
+      }
       if (
         target instanceof Element &&
         target.closest("[data-sidebar-toggle]")
@@ -74,24 +82,21 @@ export function BusinessSidebar({
     }
 
     document.addEventListener("mousedown", dismiss);
-    document.addEventListener("touchstart", dismiss, { passive: true });
     document.addEventListener("keydown", onKeyDown);
     return () => {
       document.removeEventListener("mousedown", dismiss);
-      document.removeEventListener("touchstart", dismiss);
       document.removeEventListener("keydown", onKeyDown);
     };
-  }, [open, drawerViewport, onClose]);
+  }, [open, onClose]);
 
   useEffect(() => {
-    if (!drawerViewport) return;
-    onClose();
+    if (prevPathnameRef.current === pathname) return;
+    prevPathnameRef.current = pathname;
+    if (drawerViewport) onClose();
   }, [pathname, drawerViewport, onClose]);
 
   useEffect(() => {
-    if (!drawerViewport) {
-      onClose();
-    }
+    if (!drawerViewport) onClose();
   }, [drawerViewport, onClose]);
 
   useEffect(() => {
@@ -141,15 +146,13 @@ export function BusinessSidebar({
   return (
     <>
       <div
+        data-sidebar-backdrop
         className={`fixed inset-0 z-[100] bg-brand-dark/40 backdrop-blur-sm transition-opacity xl:hidden ${
           open
             ? "pointer-events-auto opacity-100"
             : "pointer-events-none opacity-0"
         }`}
-        onPointerDown={(event) => {
-          event.preventDefault();
-          onClose();
-        }}
+        onClick={onClose}
         aria-hidden={!open}
         role="presentation"
       />

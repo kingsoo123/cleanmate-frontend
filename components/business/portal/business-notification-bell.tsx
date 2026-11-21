@@ -77,7 +77,10 @@ export function BusinessNotificationBell() {
   }
 
   return (
-    <div className="relative" ref={panelRef}>
+    <div
+      className={`relative ${open ? "z-[130]" : ""}`}
+      ref={panelRef}
+    >
       <button
         type="button"
         onClick={() => void handleOpen()}

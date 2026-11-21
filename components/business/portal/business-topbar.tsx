@@ -22,12 +22,19 @@ export function BusinessTopbar({
   onMenuClick: () => void;
 }) {
   return (
-    <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between gap-4 border-b border-border bg-surface/95 px-4 backdrop-blur sm:px-6">
+    <header
+      className={`sticky top-0 flex h-16 shrink-0 items-center justify-between gap-4 border-b border-border bg-surface/95 px-4 backdrop-blur sm:px-6 ${
+        sidebarOpen ? "z-[120] xl:z-30" : "z-30"
+      }`}
+    >
       <div className="flex min-w-0 items-center gap-3">
         <button
           type="button"
           data-sidebar-toggle
-          onClick={onMenuClick}
+          onClick={(event) => {
+            event.stopPropagation();
+            onMenuClick();
+          }}
           className="rounded-lg p-2 text-foreground hover:bg-secondary-surface xl:hidden"
           aria-label={sidebarOpen ? "Close menu" : "Open menu"}
           aria-expanded={sidebarOpen}
