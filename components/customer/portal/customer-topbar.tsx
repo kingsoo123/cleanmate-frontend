@@ -1,9 +1,19 @@
 "use client";
 
 import Link from "next/link";
+import { Suspense } from "react";
 import { LogoutButton } from "@/components/auth/logout-button";
 import { CustomerMobileNavMenu } from "@/components/customer/portal/customer-mobile-nav-menu";
 import { CustomerNotificationBell } from "@/components/customer/portal/customer-notification-bell";
+
+function MobileMenuFallback() {
+  return (
+    <span
+      className="inline-block h-10 w-10 shrink-0 rounded-lg bg-secondary-surface/80"
+      aria-hidden
+    />
+  );
+}
 
 export function CustomerTopbar({
   title,
@@ -15,7 +25,9 @@ export function CustomerTopbar({
   return (
     <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center justify-between gap-3 border-b border-border bg-surface/95 px-4 backdrop-blur sm:h-16 sm:px-6">
       <div className="flex min-w-0 items-center gap-2">
-        <CustomerMobileNavMenu />
+        <Suspense fallback={<MobileMenuFallback />}>
+          <CustomerMobileNavMenu />
+        </Suspense>
         <div className="min-w-0 xl:hidden">
           <p className="truncate text-base font-semibold text-foreground">{title}</p>
         </div>
