@@ -25,6 +25,29 @@ export function sendBusinessChatMessage(customerId: string, body: string) {
   );
 }
 
+export type BulkMessageResult = {
+  customers: {
+    attempted: number;
+    sent: number;
+    failed: Array<{ customerId: string; ok: false; error?: string }>;
+  };
+  staff: {
+    notified: Array<{ userId: string; role: string }>;
+    count: number;
+  };
+};
+
+export function sendBulkBusinessMessages(input: {
+  body: string;
+  includeCustomers?: boolean;
+  includeStaff?: boolean;
+}) {
+  return apiFetch<BulkMessageResult>("/business/messages/bulk", {
+    method: "POST",
+    body: JSON.stringify(input),
+  });
+}
+
 export function pingBusinessTyping(customerId: string) {
   return apiFetch<{ ok: true }>(
     `/business/messages/conversations/${customerId}/typing`,

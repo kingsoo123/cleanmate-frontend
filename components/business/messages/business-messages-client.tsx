@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { BusinessBulkBroadcastPanel } from "@/components/business/messages/business-bulk-broadcast-panel";
 import { ChatThreadPanel } from "@/components/messages/chat-thread-panel";
 import { AuthApiError } from "@/lib/auth/api-client";
 import { fetchBusinessCustomers } from "@/lib/business-dashboard/customers-api";
@@ -165,6 +166,12 @@ export function BusinessMessagesClient() {
           Reply to customers in real time about their orders and pickups.
         </p>
       </div>
+
+      <BusinessBulkBroadcastPanel
+        onSent={() => {
+          void loadConversations();
+        }}
+      />
 
       <div className="grid gap-6 lg:grid-cols-5">
         <div className="lg:col-span-2">
