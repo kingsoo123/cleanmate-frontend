@@ -27,6 +27,7 @@ import {
   sumOutstandingNgn,
 } from "@/lib/business-dashboard/get-orders-data";
 import { useAuthUser } from "@/lib/auth/use-auth-user";
+import { downloadOrdersTablePdf } from "@/lib/business-dashboard/export-orders-pdf";
 import type {
   BusinessOrderListRow,
   OrderListFilter,
@@ -60,8 +61,11 @@ export function OrdersListView({
   const [bulkPending, setBulkPending] = useState(false);
   const [bulkError, setBulkError] = useState<string | null>(null);
   const [bulkSummary, setBulkSummary] = useState<string | null>(null);
+  const [pdfPending, setPdfPending] = useState(false);
+  const [pdfError, setPdfError] = useState<string | null>(null);
   const user = useAuthUser();
   const showCreatedByColumn = user?.role === "business";
+  const canDownloadPdf = user?.role === "business";
 
   const filter = parseOrderListFilter(
     searchParams.get("filter") ?? undefined,
@@ -210,6 +214,25 @@ export function OrdersListView({
     }
   }
 
+  async function handleDownloadPdf() {
+    if (filtered.length === 0) return;
+    setPdfPending(true);
+    setPdfError(null);
+    try {
+      await downloadOrdersTablePdf({
+        orders: filtered,
+        filter,
+        searchQuery: query,
+        businessName: user?.businessName,
+        includeCreatedBy: showCreatedByColumn,
+      });
+    } catch {
+      setPdfError("Could not generate PDF. Try again.");
+    } finally {
+      setPdfPending(false);
+    }
+  }
+
   function setFilter(next: OrderListFilter) {
     const params = new URLSearchParams(searchParams.toString());
     if (next === "all") {
@@ -233,13 +256,31 @@ export function OrdersListView({
             Orders
           </h2>
         </div>
-        <Link
-          href="/business/orders/new"
-          className="inline-flex h-11 shrink-0 items-center justify-center rounded-full bg-brand-dark px-5 text-sm font-semibold text-white hover:opacity-90"
-        >
-          Create new order
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          {canDownloadPdf ? (
+            <button
+              type="button"
+              onClick={() => void handleDownloadPdf()}
+              disabled={pdfPending || filtered.length === 0}
+              className="inline-flex h-11 shrink-0 items-center justify-center rounded-full border border-border bg-surface px-5 text-sm font-semibold text-foreground hover:bg-secondary-surface disabled:opacity-50"
+            >
+              {pdfPending ? "Preparing PDF…" : "Download PDF"}
+            </button>
+          ) : null}
+          <Link
+            href="/business/orders/new"
+            className="inline-flex h-11 shrink-0 items-center justify-center rounded-full bg-brand-dark px-5 text-sm font-semibold text-white hover:opacity-90"
+          >
+            Create new order
+          </Link>
+        </div>
       </div>
+
+      {pdfError ? (
+        <p className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
+          {pdfError}
+        </p>
+      ) : null}
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="relative max-w-md flex-1">
