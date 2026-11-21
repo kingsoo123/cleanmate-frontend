@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState, type ReactNode } from "react";
+import { Suspense, useCallback, useState, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
 import {
   BusinessBrandProvider,
@@ -20,8 +20,11 @@ export function BusinessPortalLayout({
   periodLabel?: string;
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const closeSidebar = () => setSidebarOpen(false);
-  const toggleSidebar = () => setSidebarOpen((open) => !open);
+  const closeSidebar = useCallback(() => setSidebarOpen(false), []);
+  const toggleSidebar = useCallback(
+    () => setSidebarOpen((open) => !open),
+    [],
+  );
 
   return (
     <BusinessBrandProvider>
@@ -50,7 +53,7 @@ export function BusinessPortalLayout({
             />
           </Suspense>
           <PushNotificationsEnablePrompt />
-          <main className="flex-1 p-4 sm:p-6">
+          <main className="relative z-0 flex-1 p-4 sm:p-6">
             <Suspense fallback={<BusinessMainFallback />}>{children}</Suspense>
           </main>
         </div>

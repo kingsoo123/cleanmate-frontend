@@ -26,6 +26,7 @@ export function BusinessTopbar({
       <div className="flex min-w-0 items-center gap-3">
         <button
           type="button"
+          data-sidebar-toggle
           onClick={onMenuClick}
           className="rounded-lg p-2 text-foreground hover:bg-secondary-surface xl:hidden"
           aria-label={sidebarOpen ? "Close menu" : "Open menu"}
