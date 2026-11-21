@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect } from "react";
 import { LogoutButton } from "@/components/auth/logout-button";
 import { useBusinessBrand } from "@/components/business/portal/business-brand-provider";
 import { businessNavForUser } from "@/lib/business-dashboard/nav";
@@ -50,10 +49,6 @@ export function BusinessSidebar({
   const user = useAuthUser();
   const navItems = businessNavForUser(user);
 
-  useEffect(() => {
-    onClose();
-  }, [pathname, onClose]);
-
   function isActive(href: string) {
     if (pathname === href) return true;
     if (href === "/business/dashboard") return false;
@@ -99,8 +94,8 @@ export function BusinessSidebar({
         aria-hidden={!open}
       />
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-[min(17.5rem,85vw)] max-w-[17.5rem] flex-col border-r border-border bg-surface shadow-xl transition-transform duration-200 ease-out xl:static xl:z-0 xl:w-[17.5rem] xl:translate-x-0 xl:shadow-none ${
-          open ? "translate-x-0" : "-translate-x-full"
+        className={`fixed inset-y-0 left-0 z-50 flex w-[17.5rem] max-w-[85vw] flex-col border-r border-border bg-surface transition-transform xl:static xl:z-0 xl:max-w-none xl:translate-x-0 ${
+          open ? "translate-x-0" : "-translate-x-full xl:translate-x-0"
         }`}
       >
         <div className="flex h-16 items-center gap-2 border-b border-border px-4">
@@ -110,7 +105,7 @@ export function BusinessSidebar({
           >
             {brand.businessInitials}
           </span>
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-semibold text-foreground">
               {brand.businessName}
             </p>
@@ -120,6 +115,16 @@ export function BusinessSidebar({
                 : "Washuply business portal"}
             </p>
           </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="shrink-0 rounded-lg p-2 text-foreground hover:bg-secondary-surface xl:hidden"
+            aria-label="Close menu"
+          >
+            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
         </div>
         {nav}
         <div className="flex flex-col gap-2 border-t border-border p-4">

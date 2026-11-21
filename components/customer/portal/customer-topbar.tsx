@@ -29,7 +29,7 @@ export function CustomerTopbar({
         <div className="min-w-0 xl:hidden">
           <p className="truncate text-base font-semibold text-foreground">{title}</p>
         </div>
-        <div className="hidden min-w-0 xl:block">
+        <div className="hidden min-w-0 lg:block">
           <p className="text-lg font-semibold text-foreground">{title}</p>
           <p className="truncate text-xs text-muted">{customerName}</p>
         </div>

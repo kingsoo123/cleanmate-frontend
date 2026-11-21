@@ -23,7 +23,7 @@ export function CustomerMobileNav() {
 
 function CustomerMobileNavFallback() {
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-surface/95 backdrop-blur-md xl:hidden">
+    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-surface/95 backdrop-blur-md lg:hidden">
       <ul className="mx-auto flex max-w-lg justify-around px-1 pb-[env(safe-area-inset-bottom)] pt-2">
         {tabs.map((tab) => (
           <li key={tab.href}>
@@ -41,7 +41,7 @@ function CustomerMobileNavContent() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-surface/95 backdrop-blur-md xl:hidden">
+    <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-surface/95 backdrop-blur-md lg:hidden">
       <ul className="mx-auto flex max-w-lg justify-around px-1 pb-[env(safe-area-inset-bottom)] pt-2">
         {tabs.map((tab) => {
           const active = isCustomerNavActive(pathname, tab.href);

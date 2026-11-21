@@ -10,6 +10,7 @@ export function BusinessTopbar({
   ownerName,
   ownerInitials,
   periodLabel,
+  sidebarOpen,
   onMenuClick,
 }: {
   title: string;
@@ -17,6 +18,7 @@ export function BusinessTopbar({
   ownerName?: string;
   ownerInitials?: string;
   periodLabel?: string;
+  sidebarOpen: boolean;
   onMenuClick: () => void;
 }) {
   return (
@@ -26,11 +28,18 @@ export function BusinessTopbar({
           type="button"
           onClick={onMenuClick}
           className="rounded-lg p-2 text-foreground hover:bg-secondary-surface xl:hidden"
-          aria-label="Open menu"
+          aria-label={sidebarOpen ? "Close menu" : "Open menu"}
+          aria-expanded={sidebarOpen}
         >
-          <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-          </svg>
+          {sidebarOpen ? (
+            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          ) : (
+            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+            </svg>
+          )}
         </button>
         <div className="min-w-0">
           <h1 className="truncate text-lg font-semibold text-foreground">{title}</h1>

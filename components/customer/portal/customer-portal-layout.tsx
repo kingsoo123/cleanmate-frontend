@@ -21,7 +21,7 @@ export function CustomerPortalLayout({ children }: { children: ReactNode }) {
     <CustomerBrandProvider>
       <div className="flex min-h-screen bg-secondary-surface/50">
         <CustomerSidebar open={sidebarOpen} onClose={closeSidebar} />
-        <div className="flex min-w-0 flex-1 flex-col pb-20 xl:pb-0">
+        <div className="flex min-w-0 flex-1 flex-col pb-20 lg:pb-0">
           <Suspense
             fallback={
               <CustomerTopbar

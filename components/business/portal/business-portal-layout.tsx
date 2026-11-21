@@ -1,7 +1,7 @@
 "use client";
 
+import { Suspense, useState, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
-import { Suspense, useEffect, useState, type ReactNode } from "react";
 import {
   BusinessBrandProvider,
   useBusinessBrand,
@@ -21,29 +21,7 @@ export function BusinessPortalLayout({
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const closeSidebar = () => setSidebarOpen(false);
-  const openSidebar = () => setSidebarOpen(true);
-
-  useEffect(() => {
-    const mq = window.matchMedia("(min-width: 1280px)");
-    const onChange = () => {
-      if (mq.matches) setSidebarOpen(false);
-    };
-    mq.addEventListener("change", onChange);
-    return () => mq.removeEventListener("change", onChange);
-  }, []);
-
-  useEffect(() => {
-    const isDrawerViewport = window.matchMedia("(max-width: 1279px)").matches;
-    if (sidebarOpen && isDrawerViewport) {
-      const prev = document.body.style.overflow;
-      document.body.style.overflow = "hidden";
-      return () => {
-        document.body.style.overflow = prev;
-      };
-    }
-    document.body.style.overflow = "";
-    return undefined;
-  }, [sidebarOpen]);
+  const toggleSidebar = () => setSidebarOpen((open) => !open);
 
   return (
     <BusinessBrandProvider>
@@ -60,13 +38,15 @@ export function BusinessPortalLayout({
                 title="Business portal"
                 businessName="Your laundry"
                 periodLabel={periodLabel}
-                onMenuClick={openSidebar}
+                sidebarOpen={sidebarOpen}
+                onMenuClick={toggleSidebar}
               />
             }
           >
             <BusinessTopbarWithPathname
               periodLabel={periodLabel}
-              onMenuClick={openSidebar}
+              sidebarOpen={sidebarOpen}
+              onMenuClick={toggleSidebar}
             />
           </Suspense>
           <PushNotificationsEnablePrompt />
@@ -83,9 +63,11 @@ export function BusinessPortalLayout({
 
 function BusinessTopbarWithPathname({
   periodLabel,
+  sidebarOpen,
   onMenuClick,
 }: {
   periodLabel?: string;
+  sidebarOpen: boolean;
   onMenuClick: () => void;
 }) {
   const pathname = usePathname();
@@ -99,13 +81,19 @@ function BusinessTopbarWithPathname({
       ownerName={brand.ownerName}
       ownerInitials={brand.ownerInitials}
       periodLabel={periodLabel}
+      sidebarOpen={sidebarOpen}
       onMenuClick={onMenuClick}
     />
   );
 }
 
 function BusinessSidebarFallback() {
-  return null;
+  return (
+    <aside
+      className="fixed inset-y-0 left-0 z-50 hidden w-[17.5rem] flex-col border-r border-border bg-surface xl:static xl:flex"
+      aria-hidden
+    />
+  );
 }
 
 function BusinessMainFallback() {

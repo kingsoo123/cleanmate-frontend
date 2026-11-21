@@ -1,4 +1,3 @@
-import { connection } from "next/server";
 import { Suspense } from "react";
 import { BusinessOrderDetailClient } from "@/components/business/orders/business-order-detail-client";
 
@@ -11,8 +10,7 @@ function OrderDetailPageFallback() {
   );
 }
 
-export default async function BusinessOrderDetailPage() {
-  await connection();
+export default function BusinessOrderDetailPage() {
   return (
     <Suspense fallback={<OrderDetailPageFallback />}>
       <BusinessOrderDetailClient />
