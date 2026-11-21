@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect } from "react";
 import { LogoutButton } from "@/components/auth/logout-button";
 import { useBusinessBrand } from "@/components/business/portal/business-brand-provider";
 import { businessNavForUser } from "@/lib/business-dashboard/nav";
@@ -48,6 +49,10 @@ export function BusinessSidebar({
   const brand = useBusinessBrand();
   const user = useAuthUser();
   const navItems = businessNavForUser(user);
+
+  useEffect(() => {
+    onClose();
+  }, [pathname, onClose]);
 
   function isActive(href: string) {
     if (pathname === href) return true;

@@ -1,7 +1,7 @@
 "use client";
 
-import { Suspense, useEffect, useState, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
+import { Suspense, useEffect, useState, type ReactNode } from "react";
 import {
   BusinessBrandProvider,
   useBusinessBrand,
@@ -19,14 +19,9 @@ export function BusinessPortalLayout({
   children: ReactNode;
   periodLabel?: string;
 }) {
-  const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const closeSidebar = () => setSidebarOpen(false);
   const openSidebar = () => setSidebarOpen(true);
-
-  useEffect(() => {
-    setSidebarOpen(false);
-  }, [pathname]);
 
   useEffect(() => {
     const mq = window.matchMedia("(min-width: 1280px)");
