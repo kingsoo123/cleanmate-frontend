@@ -19,17 +19,17 @@ export function CustomerTopbar({
         <button
           type="button"
           onClick={onMenuClick}
-          className="rounded-lg p-2 hover:bg-secondary-surface lg:hidden"
+          className="rounded-lg p-2 hover:bg-secondary-surface xl:hidden"
           aria-label="Open menu"
         >
           <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
           </svg>
         </button>
-        <div className="min-w-0 lg:hidden">
+        <div className="min-w-0 xl:hidden">
           <p className="truncate text-base font-semibold text-foreground">{title}</p>
         </div>
-        <div className="hidden min-w-0 lg:block">
+        <div className="hidden min-w-0 xl:block">
           <p className="text-lg font-semibold text-foreground">{title}</p>
           <p className="truncate text-xs text-muted">{customerName}</p>
         </div>

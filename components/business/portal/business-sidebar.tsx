@@ -87,14 +87,14 @@ export function BusinessSidebar({
   return (
     <>
       <div
-        className={`fixed inset-0 z-40 bg-brand-dark/40 backdrop-blur-sm transition-opacity lg:hidden ${
+        className={`fixed inset-0 z-40 bg-brand-dark/40 backdrop-blur-sm transition-opacity xl:hidden ${
           open ? "opacity-100" : "pointer-events-none opacity-0"
         }`}
         onClick={onClose}
         aria-hidden={!open}
       />
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-[17.5rem] flex-col border-r border-border bg-surface transition-transform lg:static lg:z-0 lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 flex w-[min(17.5rem,85vw)] max-w-[17.5rem] flex-col border-r border-border bg-surface shadow-xl transition-transform duration-200 ease-out xl:static xl:z-0 xl:w-[17.5rem] xl:translate-x-0 xl:shadow-none ${
           open ? "translate-x-0" : "-translate-x-full"
         }`}
       >

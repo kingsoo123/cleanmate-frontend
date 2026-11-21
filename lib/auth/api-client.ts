@@ -49,10 +49,10 @@ async function postJson<T>(path: string, payload: unknown): Promise<T> {
       typeof window !== "undefined" &&
       !window.location.hostname.includes("localhost") &&
       /localhost|127\.0\.0\.1/.test(base)
-        ? " The app is pointing at localhost—set NEXT_PUBLIC_API_URL on Netlify to your Render API URL and redeploy."
-        : " Check that the backend is running and reachable from this network.";
+        ? " This deploy is still pointing at localhost—set NEXT_PUBLIC_API_URL on Netlify to your Render API URL (https://…) and redeploy."
+        : " The API may be waking on Render (first request can take ~1 min), or a VPN/firewall/ad blocker may be blocking the request. Try turning VPN off, wait a moment, then retry.";
     throw new AuthApiError(
-      `Could not reach the sign-in API.${hint}`,
+      `Could not reach the sign-in API at ${base}.${hint}`,
       0,
     );
   }

@@ -25,7 +25,7 @@ export function BusinessTopbar({
         <button
           type="button"
           onClick={onMenuClick}
-          className="rounded-lg p-2 text-foreground hover:bg-secondary-surface lg:hidden"
+          className="rounded-lg p-2 text-foreground hover:bg-secondary-surface xl:hidden"
           aria-label="Open menu"
         >
           <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
