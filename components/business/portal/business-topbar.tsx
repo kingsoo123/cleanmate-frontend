@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { LogoutButton } from "@/components/auth/logout-button";
+import { BusinessMobileNavMenu } from "@/components/business/portal/business-mobile-nav-menu";
 import { BusinessNotificationBell } from "@/components/business/portal/business-notification-bell";
 
 export function BusinessTopbar({
@@ -10,45 +11,17 @@ export function BusinessTopbar({
   ownerName,
   ownerInitials,
   periodLabel,
-  sidebarOpen,
-  onMenuClick,
 }: {
   title: string;
   businessName: string;
   ownerName?: string;
   ownerInitials?: string;
   periodLabel?: string;
-  sidebarOpen: boolean;
-  onMenuClick: () => void;
 }) {
   return (
-    <header
-      className={`sticky top-0 flex h-16 shrink-0 items-center justify-between gap-4 border-b border-border bg-surface/95 px-4 backdrop-blur sm:px-6 ${
-        sidebarOpen ? "z-[120] xl:z-30" : "z-30"
-      }`}
-    >
+    <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between gap-4 border-b border-border bg-surface/95 px-4 backdrop-blur sm:px-6">
       <div className="flex min-w-0 items-center gap-3">
-        <button
-          type="button"
-          data-sidebar-toggle
-          onClick={(event) => {
-            event.stopPropagation();
-            onMenuClick();
-          }}
-          className="rounded-lg p-2 text-foreground hover:bg-secondary-surface xl:hidden"
-          aria-label={sidebarOpen ? "Close menu" : "Open menu"}
-          aria-expanded={sidebarOpen}
-        >
-          {sidebarOpen ? (
-            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          ) : (
-            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
-            </svg>
-          )}
-        </button>
+        <BusinessMobileNavMenu />
         <div className="min-w-0">
           <h1 className="truncate text-lg font-semibold text-foreground">{title}</h1>
           <p className="truncate text-xs text-muted">

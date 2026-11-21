@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useCallback, useState, type ReactNode } from "react";
+import { Suspense, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
 import {
   BusinessBrandProvider,
@@ -19,45 +19,32 @@ export function BusinessPortalLayout({
   children: ReactNode;
   periodLabel?: string;
 }) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const closeSidebar = useCallback(() => setSidebarOpen(false), []);
-  const toggleSidebar = useCallback(
-    () => setSidebarOpen((open) => !open),
-    [],
-  );
-
   return (
     <BusinessBrandProvider>
       <Suspense fallback={null}>
         <BusinessPortalRouteGuard>
-      <div className="flex min-h-screen bg-secondary-surface/50">
-        <Suspense fallback={<BusinessSidebarFallback />}>
-          <BusinessSidebar open={sidebarOpen} onClose={closeSidebar} />
-        </Suspense>
-        <div className="flex min-w-0 w-full flex-1 flex-col xl:w-auto">
-          <Suspense
-            fallback={
-              <BusinessTopbar
-                title="Business portal"
-                businessName="Your laundry"
-                periodLabel={periodLabel}
-                sidebarOpen={sidebarOpen}
-                onMenuClick={toggleSidebar}
-              />
-            }
-          >
-            <BusinessTopbarWithPathname
-              periodLabel={periodLabel}
-              sidebarOpen={sidebarOpen}
-              onMenuClick={toggleSidebar}
-            />
-          </Suspense>
-          <PushNotificationsEnablePrompt />
-          <main className="relative z-0 flex-1 p-4 sm:p-6">
-            <Suspense fallback={<BusinessMainFallback />}>{children}</Suspense>
-          </main>
-        </div>
-      </div>
+          <div className="flex min-h-screen bg-secondary-surface/50">
+            <Suspense fallback={<BusinessSidebarFallback />}>
+              <BusinessSidebar />
+            </Suspense>
+            <div className="flex min-w-0 w-full flex-1 flex-col">
+              <Suspense
+                fallback={
+                  <BusinessTopbar
+                    title="Business portal"
+                    businessName="Your laundry"
+                    periodLabel={periodLabel}
+                  />
+                }
+              >
+                <BusinessTopbarWithPathname periodLabel={periodLabel} />
+              </Suspense>
+              <PushNotificationsEnablePrompt />
+              <main className="relative z-0 flex-1 p-4 sm:p-6">
+                <Suspense fallback={<BusinessMainFallback />}>{children}</Suspense>
+              </main>
+            </div>
+          </div>
         </BusinessPortalRouteGuard>
       </Suspense>
     </BusinessBrandProvider>
@@ -66,12 +53,8 @@ export function BusinessPortalLayout({
 
 function BusinessTopbarWithPathname({
   periodLabel,
-  sidebarOpen,
-  onMenuClick,
 }: {
   periodLabel?: string;
-  sidebarOpen: boolean;
-  onMenuClick: () => void;
 }) {
   const pathname = usePathname();
   const title = getBusinessNavTitle(pathname);
@@ -84,8 +67,6 @@ function BusinessTopbarWithPathname({
       ownerName={brand.ownerName}
       ownerInitials={brand.ownerInitials}
       periodLabel={periodLabel}
-      sidebarOpen={sidebarOpen}
-      onMenuClick={onMenuClick}
     />
   );
 }
@@ -93,7 +74,7 @@ function BusinessTopbarWithPathname({
 function BusinessSidebarFallback() {
   return (
     <aside
-      className="pointer-events-none fixed inset-y-0 left-0 z-50 flex w-[17.5rem] max-w-[min(85vw,20rem)] -translate-x-full flex-col border-r border-border bg-surface xl:pointer-events-auto xl:static xl:z-0 xl:flex xl:w-[17.5rem] xl:max-w-none xl:translate-x-0"
+      className="hidden w-[17.5rem] shrink-0 border-r border-border bg-surface xl:block"
       aria-hidden
     />
   );
