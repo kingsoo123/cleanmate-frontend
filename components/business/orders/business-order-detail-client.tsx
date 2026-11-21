@@ -101,7 +101,7 @@ function BusinessOrderDetailContent() {
 
   async function refreshOrderAfterPayment() {
     try {
-      const row = await fetchBusinessOrder(order.id);
+      const row = await fetchBusinessOrder(orderId);
       setOrder(row);
     } catch {
       /* keep prior row; form already showed success */
