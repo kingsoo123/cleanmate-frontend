@@ -8,8 +8,11 @@ import type { BusinessOrderListRow } from "@/lib/business-dashboard/orders-types
 
 export function OrderDetailView({
   order,
+  hideRecordPaymentLink = false,
 }: {
   order: BusinessOrderListRow;
+  /** When record payment is shown on the same page (owner). */
+  hideRecordPaymentLink?: boolean;
 }) {
   return (
     <div className="mx-auto max-w-3xl space-y-6">
@@ -69,9 +72,9 @@ export function OrderDetailView({
         </dl>
       </section>
 
-      {order.outstandingNgn > 0 ? (
+      {order.outstandingNgn > 0 && !hideRecordPaymentLink ? (
         <Link
-          href="/business/payments"
+          href={`/business/payments?order=${encodeURIComponent(order.id)}`}
           className="inline-flex items-center rounded-full border border-border bg-surface px-5 py-2.5 text-sm font-semibold text-foreground hover:bg-secondary-surface"
         >
           Record payment ({formatNgn(order.outstandingNgn)} due)

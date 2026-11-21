@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { AuthApiError } from "@/lib/auth/api-client";
 import { MetricCard } from "@/components/business/dashboard/metric-card";
 import { ViewOrderButton } from "@/components/business/orders/view-order-button";
@@ -83,9 +83,17 @@ function PaymentsListViewContent({
     setOutstanding(initialOutstanding ?? []);
   }, [initialPayments, initialOutstanding]);
   const [query, setQuery] = useState("");
+  const orderFromUrl = searchParams.get("order")?.trim() || undefined;
   const [preselectedOrderId, setPreselectedOrderId] = useState<string>();
   const [verifyError, setVerifyError] = useState<string | null>(null);
   const [verifyingId, setVerifyingId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!orderFromUrl) return;
+    if (outstanding.some((row) => row.orderId === orderFromUrl)) {
+      setPreselectedOrderId(orderFromUrl);
+    }
+  }, [orderFromUrl, outstanding]);
 
   const summary = useMemo(
     () => recomputeSummary(payments, outstanding),
@@ -100,6 +108,13 @@ function PaymentsListViewContent({
     [payments, filter, query],
   );
 
+  const recordPaymentRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!orderFromUrl || !preselectedOrderId) return;
+    recordPaymentRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [orderFromUrl, preselectedOrderId]);
+
   function setFilter(next: PaymentListFilter) {
     const params = new URLSearchParams(searchParams.toString());
     if (next === "all") params.delete("filter");
@@ -108,6 +123,13 @@ function PaymentsListViewContent({
     router.replace(qs ? `/business/payments?${qs}` : "/business/payments", {
       scroll: false,
     });
+  }
+
+  function selectOrderForPayment(orderId: string) {
+    setPreselectedOrderId(orderId);
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("order", orderId);
+    router.replace(`/business/payments?${params.toString()}`, { scroll: false });
   }
 
   function handlePaymentRecorded(
@@ -190,8 +212,16 @@ function PaymentsListViewContent({
         />
       </div>
 
+      {orderFromUrl &&
+      preselectedOrderId &&
+      !outstanding.some((row) => row.orderId === orderFromUrl) ? (
+        <p className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900">
+          This order no longer has an outstanding balance (or it could not be loaded).
+        </p>
+      ) : null}
+
       <div className="grid gap-8 lg:grid-cols-5">
-        <div className="lg:col-span-2">
+        <div ref={recordPaymentRef} className="lg:col-span-2">
           <RecordPaymentForm
             key={preselectedOrderId ?? "default"}
             outstandingOrders={outstanding}
@@ -217,7 +247,7 @@ function PaymentsListViewContent({
                     <div className="flex w-full items-center gap-3 px-5 py-3 hover:bg-secondary-surface/40">
                       <button
                         type="button"
-                        onClick={() => setPreselectedOrderId(order.orderId)}
+                        onClick={() => selectOrderForPayment(order.orderId)}
                         className="min-w-0 flex-1 text-left"
                       >
                         <p className="font-mono text-xs font-semibold text-brand">

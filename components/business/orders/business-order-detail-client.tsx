@@ -4,8 +4,11 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { OrderDetailView } from "@/components/business/orders/order-detail-view";
+import { RecordPaymentForm } from "@/components/business/payments/record-payment-form";
 import { UpdateOrderStatusForm } from "@/components/business/orders/update-order-status-form";
 import { AuthApiError } from "@/lib/auth/api-client";
+import { useAuthUser } from "@/lib/auth/use-auth-user";
+import { orderRowToOutstanding } from "@/lib/business-dashboard/order-to-outstanding";
 import { fetchBusinessOrder } from "@/lib/business-dashboard/operations-api";
 import type { BusinessOrderListRow } from "@/lib/business-dashboard/orders-types";
 
@@ -29,6 +32,8 @@ function OrderDetailFallback() {
 function BusinessOrderDetailContent() {
   const params = useParams();
   const orderId = typeof params.id === "string" ? params.id : "";
+  const user = useAuthUser();
+  const canRecordPayment = user?.role === "business";
   const [order, setOrder] = useState<BusinessOrderListRow | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -94,9 +99,31 @@ function BusinessOrderDetailContent() {
     );
   }
 
+  async function refreshOrderAfterPayment() {
+    try {
+      const row = await fetchBusinessOrder(order.id);
+      setOrder(row);
+    } catch {
+      /* keep prior row; form already showed success */
+    }
+  }
+
   return (
     <div className="space-y-6">
-      <OrderDetailView order={order} />
+      <OrderDetailView
+        order={order}
+        hideRecordPaymentLink={canRecordPayment && order.outstandingNgn > 0}
+      />
+      {canRecordPayment && order.outstandingNgn > 0 ? (
+        <RecordPaymentForm
+          key={order.id}
+          outstandingOrders={[orderRowToOutstanding(order)]}
+          preselectedOrderId={order.id}
+          onPaymentRecorded={(_payment, _orderId, _amountNgn) => {
+            void refreshOrderAfterPayment();
+          }}
+        />
+      ) : null}
       <UpdateOrderStatusForm order={order} onUpdated={setOrder} />
     </div>
   );

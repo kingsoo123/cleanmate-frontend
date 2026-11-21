@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { CustomerPayBalanceForm } from "@/components/customer/payments/customer-pay-balance-form";
 import { formatNgn, formatUpdatedAt } from "@/lib/business-dashboard/format";
 import {
@@ -41,6 +41,12 @@ export function CustomerPaymentsView({
     initialTotalOutstandingNgn,
   );
   const [history, setHistory] = useState(initialHistory);
+
+  useEffect(() => {
+    setOutstanding(initialOutstanding);
+    setTotalOutstanding(initialTotalOutstandingNgn);
+    setHistory(initialHistory);
+  }, [initialOutstanding, initialTotalOutstandingNgn, initialHistory]);
 
   function handlePaymentSubmitted(payment: CustomerPaymentRow) {
     setHistory((prev) => [payment, ...prev]);
@@ -87,10 +93,10 @@ export function CustomerPaymentsView({
       </div>
 
       <CustomerPayBalanceForm
-        key={preselectedOrderId ?? "default"}
         outstanding={outstanding}
         transferDetails={transferDetails}
         preselectedOrderId={preselectedOrderId}
+        paymentHistory={history}
         onPaymentSubmitted={(payment) => {
           handlePaymentSubmitted(payment);
         }}

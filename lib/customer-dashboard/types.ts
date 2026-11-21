@@ -29,6 +29,7 @@ export type CustomerOrderRow = {
 
 export type CustomerPaymentRow = {
   id: string;
+  orderId?: string;
   orderNumber: string;
   amountNgn: number;
   method: string;

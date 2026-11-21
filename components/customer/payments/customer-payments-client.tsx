@@ -30,25 +30,32 @@ function CustomerPaymentsContent() {
   const [data, setData] = useState<CustomerPaymentsOverview | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  async function loadOverview() {
+    try {
+      const overview = await fetchCustomerPaymentsOverview();
+      setData(overview);
+      setError(null);
+    } catch (err) {
+      setError(
+        err instanceof AuthApiError
+          ? err.message
+          : "Could not load payments.",
+      );
+    }
+  }
+
   useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const overview = await fetchCustomerPaymentsOverview();
-        if (!cancelled) setData(overview);
-      } catch (err) {
-        if (!cancelled) {
-          setError(
-            err instanceof AuthApiError
-              ? err.message
-              : "Could not load payments.",
-          );
-        }
+    void loadOverview();
+  }, []);
+
+  useEffect(() => {
+    function onVisible() {
+      if (document.visibilityState === "visible") {
+        void loadOverview();
       }
-    })();
-    return () => {
-      cancelled = true;
-    };
+    }
+    document.addEventListener("visibilitychange", onVisible);
+    return () => document.removeEventListener("visibilitychange", onVisible);
   }, []);
 
   if (error) {

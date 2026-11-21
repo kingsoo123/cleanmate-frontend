@@ -13,6 +13,18 @@ import type { CustomerPaymentRow } from "@/lib/customer-dashboard/types";
 
 export type CustomerPayMethod = "bank_transfer" | "pay_at_shop";
 
+function orderHasPendingPayment(
+  orderId: string,
+  orderNumber: string,
+  history: CustomerPaymentRow[],
+): boolean {
+  return history.some(
+    (row) =>
+      row.status === "Pending" &&
+      (row.orderId === orderId || row.orderNumber === orderNumber),
+  );
+}
+
 function resolveInitialOrderId(
   balances: CustomerOutstandingBalance[],
   preselectedOrderId?: string,
@@ -30,11 +42,13 @@ export function CustomerPayBalanceForm({
   outstanding,
   transferDetails,
   preselectedOrderId,
+  paymentHistory,
   onPaymentSubmitted,
 }: {
   outstanding: CustomerOutstandingBalance[];
   transferDetails: LaundryTransferDetails;
   preselectedOrderId?: string;
+  paymentHistory: CustomerPaymentRow[];
   onPaymentSubmitted: (payment: CustomerPaymentRow) => void;
 }) {
   const initialOrderId = resolveInitialOrderId(outstanding, preselectedOrderId);
@@ -47,14 +61,21 @@ export function CustomerPayBalanceForm({
   const [method, setMethod] = useState<CustomerPayMethod>("bank_transfer");
   const [transferRef, setTransferRef] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   const selected = outstanding.find((b) => b.orderId === orderId);
+  const pendingForSelected =
+    selected &&
+    orderHasPendingPayment(
+      selected.orderId,
+      selected.orderNumber,
+      paymentHistory,
+    );
+  const submitDisabled = submitting || Boolean(pendingForSelected);
 
   function handleOrderChange(nextId: string) {
     setOrderId(nextId);
-    setSubmitted(false);
+    setError(null);
     const balance = outstanding.find((b) => b.orderId === nextId);
     setAmount(balance ? String(balance.outstandingNgn) : "");
   }
@@ -62,7 +83,10 @@ export function CustomerPayBalanceForm({
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
     setError(null);
-    setSubmitted(false);
+
+    if (pendingForSelected) {
+      return;
+    }
 
     if (!selected) {
       setError("Select an order to pay.");
@@ -96,7 +120,6 @@ export function CustomerPayBalanceForm({
           method === "bank_transfer" ? transferRef.trim() : undefined,
       });
       onPaymentSubmitted(payment);
-      setSubmitted(true);
       setTransferRef("");
     } catch (err) {
       setError(
@@ -128,13 +151,13 @@ export function CustomerPayBalanceForm({
         before the order balance updates.
       </p>
 
-      {submitted ? (
+      {pendingForSelected ? (
         <p
           className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-900"
           role="status"
         >
           Payment submitted. It will show as Pending until your laundry verifies
-          it.
+          it. You can submit another payment for this order after that.
         </p>
       ) : null}
 
@@ -147,7 +170,8 @@ export function CustomerPayBalanceForm({
             id="pay-order"
             value={orderId}
             onChange={(e) => handleOrderChange(e.target.value)}
-            className="w-full rounded-xl border border-border bg-surface px-3.5 py-2.5 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
+            disabled={submitting}
+            className="w-full rounded-xl border border-border bg-surface px-3.5 py-2.5 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20 disabled:opacity-60"
           >
             {outstanding.map((row) => (
               <option key={row.orderId} value={row.orderId}>
@@ -170,10 +194,8 @@ export function CustomerPayBalanceForm({
           required
           min={1}
           value={amount}
-          onChange={(e) => {
-            setAmount(e.target.value);
-            setSubmitted(false);
-          }}
+          onChange={(e) => setAmount(e.target.value)}
+          disabled={submitDisabled}
         />
 
         <div className="space-y-1.5">
@@ -188,10 +210,8 @@ export function CustomerPayBalanceForm({
               <button
                 key={id}
                 type="button"
-                onClick={() => {
-                  setMethod(id);
-                  setSubmitted(false);
-                }}
+                onClick={() => setMethod(id)}
+                disabled={submitDisabled}
                 className={`rounded-full px-4 py-2 text-sm font-semibold ${
                   method === id
                     ? "bg-brand text-white"
@@ -222,6 +242,7 @@ export function CustomerPayBalanceForm({
               value={transferRef}
               onChange={(e) => setTransferRef(e.target.value)}
               placeholder="e.g. TXN-882910"
+              disabled={submitDisabled}
             />
           </div>
         ) : (
@@ -239,10 +260,14 @@ export function CustomerPayBalanceForm({
 
         <button
           type="submit"
-          disabled={submitting}
+          disabled={submitDisabled}
           className="flex h-11 w-full items-center justify-center rounded-full bg-brand-dark text-sm font-semibold text-white hover:opacity-90 disabled:opacity-60"
         >
-          {submitting ? "Submitting…" : "Submit payment"}
+          {submitting
+            ? "Submitting…"
+            : pendingForSelected
+              ? "Awaiting verification"
+              : "Submit payment"}
         </button>
       </form>
     </div>
