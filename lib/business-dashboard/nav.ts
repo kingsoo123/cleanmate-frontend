@@ -10,6 +10,7 @@ const branchManagerNavHrefs = new Set([
   "/business/dashboard",
   "/business/orders",
   "/business/orders/new",
+  "/business/customers",
   "/business/notifications",
 ]);
 
@@ -29,6 +30,7 @@ export function isBusinessPathAllowedForUser(
   if (user?.role !== "branch_manager") return true;
   if (pathname === "/business/dashboard") return true;
   if (pathname.startsWith("/business/orders")) return true;
+  if (pathname.startsWith("/business/customers")) return true;
   if (pathname.startsWith("/business/notifications")) return true;
   return false;
 }
