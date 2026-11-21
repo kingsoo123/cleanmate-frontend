@@ -34,7 +34,7 @@ export function BusinessPortalLayout({
         <Suspense fallback={<BusinessSidebarFallback />}>
           <BusinessSidebar open={sidebarOpen} onClose={closeSidebar} />
         </Suspense>
-        <div className="flex min-w-0 flex-1 flex-col">
+        <div className="flex min-w-0 w-full flex-1 flex-col xl:w-auto">
           <Suspense
             fallback={
               <BusinessTopbar
@@ -93,7 +93,7 @@ function BusinessTopbarWithPathname({
 function BusinessSidebarFallback() {
   return (
     <aside
-      className="fixed inset-y-0 left-0 z-50 hidden w-[17.5rem] flex-col border-r border-border bg-surface xl:static xl:flex"
+      className="pointer-events-none fixed inset-y-0 left-0 z-50 flex w-[17.5rem] max-w-[min(85vw,20rem)] -translate-x-full flex-col border-r border-border bg-surface xl:pointer-events-auto xl:static xl:z-0 xl:flex xl:w-[17.5rem] xl:max-w-none xl:translate-x-0"
       aria-hidden
     />
   );

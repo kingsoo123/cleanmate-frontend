@@ -88,6 +88,21 @@ export function BusinessSidebar({
     onClose();
   }, [pathname, drawerViewport, onClose]);
 
+  useEffect(() => {
+    if (!drawerViewport) {
+      onClose();
+    }
+  }, [drawerViewport, onClose]);
+
+  useEffect(() => {
+    if (!open || !drawerViewport) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [open, drawerViewport]);
+
   function isActive(href: string) {
     if (pathname === href) return true;
     if (href === "/business/dashboard") return false;
@@ -127,7 +142,7 @@ export function BusinessSidebar({
     <>
       <div
         className={`fixed inset-0 z-[100] bg-brand-dark/40 backdrop-blur-sm transition-opacity xl:hidden ${
-          open && drawerViewport
+          open
             ? "pointer-events-auto opacity-100"
             : "pointer-events-none opacity-0"
         }`}
@@ -140,12 +155,10 @@ export function BusinessSidebar({
       />
       <aside
         ref={panelRef}
-        className={`fixed inset-y-0 left-0 z-[110] flex w-[17.5rem] max-w-[85vw] flex-col border-r border-border bg-surface shadow-xl transition-transform xl:static xl:z-0 xl:max-w-none xl:translate-x-0 xl:shadow-none ${
-          open || !drawerViewport
-            ? "translate-x-0"
-            : "-translate-x-full"
-        }`}
-        aria-hidden={drawerViewport && !open}
+        className={`fixed inset-y-0 left-0 z-[110] flex w-[17.5rem] max-w-[min(85vw,20rem)] flex-col border-r border-border bg-surface shadow-xl transition-transform duration-200 ease-out xl:static xl:z-0 xl:w-[17.5rem] xl:max-w-none xl:translate-x-0 xl:shadow-none ${
+          open ? "translate-x-0" : "-translate-x-full"
+        } xl:translate-x-0`}
+        aria-hidden={drawerViewport ? !open : false}
       >
         <div className="flex h-16 items-center gap-2 border-b border-border px-4">
           <span
