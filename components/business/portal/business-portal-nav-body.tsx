@@ -108,7 +108,7 @@ export function BusinessPortalNavBody({
       <div className="flex flex-col gap-2 border-t border-border p-3">
         <LogoutButton
           role="business"
-          className="w-full rounded-lg py-2 text-left text-xs font-semibold text-foreground hover:text-brand"
+          className="block w-full rounded-xl border border-border bg-secondary-surface px-3 py-2.5 text-center text-sm font-semibold text-foreground transition-colors hover:bg-secondary-surface/80 hover:text-brand"
         />
         <Link
           href="/"

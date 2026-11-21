@@ -26,6 +26,7 @@ import {
   parseOrdersPage,
   sumOutstandingNgn,
 } from "@/lib/business-dashboard/get-orders-data";
+import { useAuthUser } from "@/lib/auth/use-auth-user";
 import type {
   BusinessOrderListRow,
   OrderListFilter,
@@ -59,6 +60,8 @@ export function OrdersListView({
   const [bulkPending, setBulkPending] = useState(false);
   const [bulkError, setBulkError] = useState<string | null>(null);
   const [bulkSummary, setBulkSummary] = useState<string | null>(null);
+  const user = useAuthUser();
+  const showCreatedByColumn = user?.role === "business";
 
   const filter = parseOrderListFilter(
     searchParams.get("filter") ?? undefined,
@@ -335,6 +338,7 @@ export function OrdersListView({
                 <OrderCard
                   key={order.id}
                   order={order}
+                  showCreatedBy={showCreatedByColumn}
                   selectable={isOrderOpenForBulkEdit(order.status)}
                   selected={selectedIds.has(order.id)}
                   onToggleSelect={() => toggleSelected(order.id)}
@@ -359,6 +363,9 @@ export function OrdersListView({
                     <th className="px-3 pb-3 pt-4 font-medium">Order</th>
                     <th className="pb-3 pr-4 font-medium">Tag</th>
                     <th className="pb-3 pr-4 font-medium">Customer</th>
+                    {showCreatedByColumn ? (
+                      <th className="pb-3 pr-4 font-medium">Created by</th>
+                    ) : null}
                     <th className="pb-3 pr-4 font-medium">Source</th>
                     <th className="pb-3 pr-4 font-medium">Stage</th>
                     <th className="pb-3 pr-4 font-medium">Status</th>
@@ -406,6 +413,13 @@ export function OrdersListView({
                         </p>
                         <p className="text-xs text-muted">{order.customerPhone}</p>
                       </td>
+                      {showCreatedByColumn ? (
+                        <td className="py-3.5 pr-4 text-foreground">
+                          {order.createdByName ?? (
+                            <span className="text-muted">—</span>
+                          )}
+                        </td>
+                      ) : null}
                       <td className="py-3.5 pr-4 text-muted">{order.source}</td>
                       <td className="py-3.5 pr-4 text-foreground">
                         {order.processingStage}
@@ -499,11 +513,13 @@ function OrdersPagination({
 
 function OrderCard({
   order,
+  showCreatedBy,
   selectable,
   selected,
   onToggleSelect,
 }: {
   order: BusinessOrderListRow;
+  showCreatedBy?: boolean;
   selectable: boolean;
   selected: boolean;
   onToggleSelect: () => void;
@@ -535,6 +551,9 @@ function OrderCard({
         Tag {order.tag ?? order.trackingCode ?? "—"}
       </p>
       <p className="mt-1 font-medium text-foreground">{order.customerName}</p>
+      {showCreatedBy && order.createdByName ? (
+        <p className="text-xs text-muted">Created by {order.createdByName}</p>
+      ) : null}
       <p className="text-xs text-muted">
         {order.source} · {order.processingStage}
       </p>

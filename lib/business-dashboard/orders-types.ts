@@ -16,6 +16,8 @@ export type BusinessOrderListRow = {
   totalNgn: number;
   outstandingNgn: number;
   itemsSummary: string;
+  /** Portal user who created the order (owner, branch manager, etc.). */
+  createdByName: string | null;
   updatedAt: string;
   createdAt: string;
 };

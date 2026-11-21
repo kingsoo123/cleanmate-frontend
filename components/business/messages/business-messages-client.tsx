@@ -5,9 +5,9 @@ import { BusinessBulkBroadcastPanel } from "@/components/business/messages/busin
 import { ChatThreadPanel } from "@/components/messages/chat-thread-panel";
 import { AuthApiError } from "@/lib/auth/api-client";
 import { formatUpdatedAt } from "@/lib/business-dashboard/format";
+import { loadBusinessMessageDirectory } from "@/lib/business-dashboard/load-message-directory";
 import {
   fetchBusinessChatThread,
-  fetchBusinessMessageDirectory,
   fetchBusinessStaffChatThread,
   pingBusinessTyping,
   sendBusinessChatMessage,
@@ -34,22 +34,29 @@ export function BusinessMessagesClient() {
   );
   const [listLoading, setListLoading] = useState(true);
   const [threadLoading, setThreadLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [listError, setListError] = useState<string | null>(null);
+  const [threadError, setThreadError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [pickerOpen, setPickerOpen] = useState(false);
 
   const loadDirectory = useCallback(async () => {
     try {
-      const list = await fetchBusinessMessageDirectory();
-      setDirectory(list);
-      setError(null);
-      return list;
+      const { recipients } = await loadBusinessMessageDirectory();
+      setDirectory(recipients);
+      setListError(
+        recipients.length === 0
+          ? "Add customers under Customers to start messaging."
+          : null,
+      );
+      return recipients;
     } catch (err) {
-      setError(
+      setListError(
         err instanceof AuthApiError
           ? err.message
           : "Could not load contacts.",
       );
+      setDirectory([]);
       return [];
     }
   }, []);
@@ -60,9 +67,9 @@ export function BusinessMessagesClient() {
       const data = await fetchBusinessChatThread(customerId);
       setCustomerThread(data);
       setStaffThread(null);
-      setError(null);
+      setThreadError(null);
     } catch (err) {
-      setError(
+      setThreadError(
         err instanceof AuthApiError
           ? err.message
           : "Could not load conversation.",
@@ -78,9 +85,9 @@ export function BusinessMessagesClient() {
       const data = await fetchBusinessStaffChatThread(staffUserId);
       setStaffThread(data);
       setCustomerThread(null);
-      setError(null);
+      setThreadError(null);
     } catch (err) {
-      setError(
+      setThreadError(
         err instanceof AuthApiError
           ? err.message
           : "Could not load staff conversation.",
@@ -121,24 +128,27 @@ export function BusinessMessagesClient() {
     }
   }, [selected, loadCustomerThread, loadStaffThread]);
 
-  const sidebarRows = useMemo(() => {
-    const q = searchQuery.trim().toLowerCase();
-    let rows = directory;
-    if (q) {
-      rows = rows.filter(
-        (row) =>
-          row.name.toLowerCase().includes(q) ||
-          row.phone.includes(q) ||
-          row.roleLabel.toLowerCase().includes(q),
-      );
-    }
-    return [...rows].sort((a, b) => {
+  const sortedDirectory = useMemo(() => {
+    return [...directory].sort((a, b) => {
       const aTime = a.lastMessageAt ? Date.parse(a.lastMessageAt) : 0;
       const bTime = b.lastMessageAt ? Date.parse(b.lastMessageAt) : 0;
       if (bTime !== aTime) return bTime - aTime;
       return a.name.localeCompare(b.name);
     });
-  }, [directory, searchQuery]);
+  }, [directory]);
+
+  const sidebarRows = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return sortedDirectory;
+    return sortedDirectory.filter(
+      (row) =>
+        row.name.toLowerCase().includes(q) ||
+        row.phone.includes(q) ||
+        row.roleLabel.toLowerCase().includes(q),
+    );
+  }, [sortedDirectory, searchQuery]);
+
+  const showPickerList = pickerOpen || searchQuery.trim().length > 0;
 
   const selectedRow = selected
     ? directory.find((row) => row.kind === selected.kind && row.id === selected.id)
@@ -223,77 +233,55 @@ export function BusinessMessagesClient() {
       <div className="grid gap-6 lg:grid-cols-5">
         <div className="lg:col-span-2">
           <div className="rounded-2xl border border-border bg-surface shadow-sm">
-            <div className="border-b border-border p-3">
+            <div className="relative border-b border-border p-3">
               <input
                 type="search"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                onFocus={() => setPickerOpen(true)}
+                onBlur={() => {
+                  window.setTimeout(() => setPickerOpen(false), 150);
+                }}
                 placeholder="Search customers and staff…"
+                aria-expanded={showPickerList}
+                aria-controls="message-directory-list"
                 className="w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
               />
+              {showPickerList && !listLoading ? (
+                <ContactPickerList
+                  id="message-directory-list"
+                  rows={sidebarRows}
+                  emptyQuery={searchQuery.trim().length > 0}
+                  listError={listError}
+                  directoryEmpty={directory.length === 0}
+                  selected={selected}
+                  onPick={(row) => {
+                    setSelected({ kind: row.kind, id: row.id });
+                    setSearchQuery("");
+                    setPickerOpen(false);
+                  }}
+                  className="absolute left-3 right-3 top-full z-20 mt-1 max-h-[min(50vh,420px)] overflow-y-auto rounded-xl border border-border bg-surface shadow-lg lg:static lg:mt-3 lg:max-h-[min(70vh,640px)] lg:rounded-none lg:border-0 lg:shadow-none"
+                />
+              ) : null}
             </div>
             {listLoading ? (
               <p className="px-4 py-8 text-center text-sm text-muted">
                 Loading…
               </p>
-            ) : sidebarRows.length === 0 ? (
-              <p className="px-4 py-8 text-center text-sm text-muted">
-                No contacts match your search.
-              </p>
             ) : (
-              <ul className="max-h-[min(70vh,640px)] divide-y divide-border overflow-y-auto">
-                {sidebarRows.map((row) => {
-                  const active =
-                    selected?.kind === row.kind && selected.id === row.id;
-                  return (
-                    <li key={`${row.kind}-${row.id}`}>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setSelected({ kind: row.kind, id: row.id })
-                        }
-                        className={`w-full px-4 py-3 text-left transition-colors ${
-                          active
-                            ? "bg-brand-light/40"
-                            : "hover:bg-secondary-surface/50"
-                        }`}
-                      >
-                        <div className="flex items-center gap-2">
-                          <p className="min-w-0 flex-1 truncate text-sm font-semibold text-foreground">
-                            {row.name}
-                          </p>
-                          <span
-                            className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${
-                              row.kind === "staff"
-                                ? "bg-secondary-surface text-muted"
-                                : "bg-brand-light/80 text-brand"
-                            }`}
-                          >
-                            {row.roleLabel}
-                          </span>
-                        </div>
-                        <p className="truncate text-xs text-muted">
-                          {row.phone}
-                        </p>
-                        {row.lastMessagePreview ? (
-                          <p className="mt-1 truncate text-xs text-foreground/80">
-                            {row.lastMessagePreview}
-                          </p>
-                        ) : (
-                          <p className="mt-1 text-xs italic text-muted">
-                            No messages yet
-                          </p>
-                        )}
-                        {row.lastMessageAt ? (
-                          <p className="mt-0.5 text-[10px] text-muted">
-                            {formatUpdatedAt(row.lastMessageAt)}
-                          </p>
-                        ) : null}
-                      </button>
-                    </li>
-                  );
-                })}
-              </ul>
+              <div className="hidden lg:block">
+                <ContactPickerList
+                  rows={sortedDirectory}
+                  emptyQuery={false}
+                  listError={listError}
+                  directoryEmpty={directory.length === 0}
+                  selected={selected}
+                  onPick={(row) =>
+                    setSelected({ kind: row.kind, id: row.id })
+                  }
+                  className="max-h-[min(70vh,640px)] overflow-y-auto"
+                />
+              </div>
             )}
           </div>
         </div>
@@ -306,7 +294,7 @@ export function BusinessMessagesClient() {
               messages={messages}
               partnerIsTyping={partnerIsTyping}
               loading={threadLoading}
-              error={error}
+              error={threadError}
               sending={sending}
               onSend={handleSend}
               onRefresh={refreshThread}
@@ -325,5 +313,97 @@ export function BusinessMessagesClient() {
         </div>
       </div>
     </div>
+  );
+}
+
+function ContactPickerList({
+  id,
+  rows,
+  emptyQuery,
+  listError,
+  directoryEmpty,
+  selected,
+  onPick,
+  className = "",
+}: {
+  id?: string;
+  rows: MessageDirectoryRecipient[];
+  emptyQuery: boolean;
+  listError: string | null;
+  directoryEmpty: boolean;
+  selected: SelectedRecipient | null;
+  onPick: (row: MessageDirectoryRecipient) => void;
+  className?: string;
+}) {
+  if (listError && directoryEmpty) {
+    return (
+      <p className={`px-4 py-6 text-center text-sm text-muted ${className}`}>
+        {listError}
+      </p>
+    );
+  }
+
+  if (rows.length === 0) {
+    return (
+      <p className={`px-4 py-6 text-center text-sm text-muted ${className}`}>
+        {emptyQuery
+          ? "No contacts match your search."
+          : "No customers or staff yet."}
+      </p>
+    );
+  }
+
+  return (
+    <ul
+      id={id}
+      className={`divide-y divide-border ${className}`}
+      role="listbox"
+    >
+      {rows.map((row) => {
+        const active = selected?.kind === row.kind && selected.id === row.id;
+        return (
+          <li key={`${row.kind}-${row.id}`} role="option" aria-selected={active}>
+            <button
+              type="button"
+              onMouseDown={(event) => event.preventDefault()}
+              onClick={() => onPick(row)}
+              className={`w-full px-4 py-3 text-left transition-colors ${
+                active
+                  ? "bg-brand-light/40"
+                  : "hover:bg-secondary-surface/50"
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <p className="min-w-0 flex-1 truncate text-sm font-semibold text-foreground">
+                  {row.name}
+                </p>
+                <span
+                  className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${
+                    row.kind === "staff"
+                      ? "bg-secondary-surface text-muted"
+                      : "bg-brand-light/80 text-brand"
+                  }`}
+                >
+                  {row.roleLabel}
+                </span>
+              </div>
+              <p className="truncate text-xs text-muted">{row.phone}</p>
+              {row.lastMessagePreview ? (
+                <p className="mt-1 truncate text-xs text-foreground/80">
+                  {row.lastMessagePreview}
+                </p>
+              ) : (
+                <p className="mt-1 text-xs italic text-muted">No messages yet</p>
+              )}
+              {row.lastMessageAt ? (
+                <p className="mt-0.5 text-[10px] text-muted">
+                  {formatUpdatedAt(row.lastMessageAt)}
+                </p>
+              ) : null}
+            </button>
+          </li>
+        );
+      })}
+    </ul>
   );
 }
