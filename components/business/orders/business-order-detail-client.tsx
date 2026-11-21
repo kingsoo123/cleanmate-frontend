@@ -33,7 +33,8 @@ function BusinessOrderDetailContent() {
   const params = useParams();
   const orderId = typeof params.id === "string" ? params.id : "";
   const user = useAuthUser();
-  const canRecordPayment = user?.role === "business";
+  const canRecordPayment =
+    user?.role === "business" || user?.role === "branch_manager";
   const [order, setOrder] = useState<BusinessOrderListRow | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
