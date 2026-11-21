@@ -30,3 +30,21 @@ export type BusinessChatThread = {
   partnerIsTyping?: boolean;
   messages: ChatMessage[];
 };
+
+export type MessageDirectoryRecipient = {
+  kind: "customer" | "staff";
+  id: string;
+  name: string;
+  phone: string;
+  roleLabel: string;
+  lastMessagePreview: string;
+  lastMessageAt: string | null;
+};
+
+export type BusinessStaffChatThread = {
+  staffUserId: string;
+  staffName: string;
+  staffPhone: string;
+  staffRole: "branch_manager" | "rider";
+  messages: ChatMessage[];
+};

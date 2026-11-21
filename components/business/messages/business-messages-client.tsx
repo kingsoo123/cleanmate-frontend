@@ -4,66 +4,62 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { BusinessBulkBroadcastPanel } from "@/components/business/messages/business-bulk-broadcast-panel";
 import { ChatThreadPanel } from "@/components/messages/chat-thread-panel";
 import { AuthApiError } from "@/lib/auth/api-client";
-import { fetchBusinessCustomers } from "@/lib/business-dashboard/customers-api";
 import { formatUpdatedAt } from "@/lib/business-dashboard/format";
 import {
-  fetchBusinessChatConversations,
   fetchBusinessChatThread,
+  fetchBusinessMessageDirectory,
+  fetchBusinessStaffChatThread,
   pingBusinessTyping,
   sendBusinessChatMessage,
+  sendBusinessStaffChatMessage,
 } from "@/lib/business-dashboard/messages-api";
-import type { BusinessCustomer } from "@/lib/business-dashboard/customers-types";
 import type {
-  BusinessChatConversation,
   BusinessChatThread,
+  BusinessStaffChatThread,
+  MessageDirectoryRecipient,
 } from "@/lib/messages/types";
 
+type SelectedRecipient = {
+  kind: MessageDirectoryRecipient["kind"];
+  id: string;
+};
+
 export function BusinessMessagesClient() {
-  const [conversations, setConversations] = useState<
-    BusinessChatConversation[]
-  >([]);
-  const [customers, setCustomers] = useState<BusinessCustomer[]>([]);
-  const [selectedCustomerId, setSelectedCustomerId] = useState<string | null>(
+  const [directory, setDirectory] = useState<MessageDirectoryRecipient[]>([]);
+  const [selected, setSelected] = useState<SelectedRecipient | null>(null);
+  const [customerThread, setCustomerThread] =
+    useState<BusinessChatThread | null>(null);
+  const [staffThread, setStaffThread] = useState<BusinessStaffChatThread | null>(
     null,
   );
-  const [thread, setThread] = useState<BusinessChatThread | null>(null);
   const [listLoading, setListLoading] = useState(true);
   const [threadLoading, setThreadLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sending, setSending] = useState(false);
-  const [customerQuery, setCustomerQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
 
-  const loadConversations = useCallback(async () => {
+  const loadDirectory = useCallback(async () => {
     try {
-      const list = await fetchBusinessChatConversations();
-      setConversations(list);
+      const list = await fetchBusinessMessageDirectory();
+      setDirectory(list);
       setError(null);
       return list;
     } catch (err) {
       setError(
         err instanceof AuthApiError
           ? err.message
-          : "Could not load conversations.",
+          : "Could not load contacts.",
       );
       return [];
     }
   }, []);
 
-  const loadCustomers = useCallback(async () => {
-    try {
-      const list = await fetchBusinessCustomers();
-      setCustomers(list);
-      return list;
-    } catch {
-      return [];
-    }
-  }, []);
-
-  const loadThread = useCallback(async (customerId: string) => {
+  const loadCustomerThread = useCallback(async (customerId: string) => {
     setThreadLoading(true);
     try {
       const data = await fetchBusinessChatThread(customerId);
-      setThread(data);
+      setCustomerThread(data);
+      setStaffThread(null);
       setError(null);
     } catch (err) {
       setError(
@@ -76,84 +72,135 @@ export function BusinessMessagesClient() {
     }
   }, []);
 
+  const loadStaffThread = useCallback(async (staffUserId: string) => {
+    setThreadLoading(true);
+    try {
+      const data = await fetchBusinessStaffChatThread(staffUserId);
+      setStaffThread(data);
+      setCustomerThread(null);
+      setError(null);
+    } catch (err) {
+      setError(
+        err instanceof AuthApiError
+          ? err.message
+          : "Could not load staff conversation.",
+      );
+    } finally {
+      setThreadLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     let cancelled = false;
     (async () => {
       setListLoading(true);
-      const [convList, customerList] = await Promise.all([
-        loadConversations(),
-        loadCustomers(),
-      ]);
+      const list = await loadDirectory();
       if (cancelled) return;
-      const initialId =
-        convList[0]?.customerId ?? customerList[0]?.id ?? null;
-      setSelectedCustomerId(initialId);
+      const initial =
+        list.find((row) => row.lastMessageAt) ?? list[0] ?? null;
+      setSelected(
+        initial ? { kind: initial.kind, id: initial.id } : null,
+      );
       setListLoading(false);
     })();
     return () => {
       cancelled = true;
     };
-  }, [loadConversations, loadCustomers]);
+  }, [loadDirectory]);
 
   useEffect(() => {
-    if (!selectedCustomerId) {
-      setThread(null);
+    if (!selected) {
+      setCustomerThread(null);
+      setStaffThread(null);
       return;
     }
-    void loadThread(selectedCustomerId);
-  }, [selectedCustomerId, loadThread]);
+    if (selected.kind === "customer") {
+      void loadCustomerThread(selected.id);
+    } else {
+      void loadStaffThread(selected.id);
+    }
+  }, [selected, loadCustomerThread, loadStaffThread]);
 
   const sidebarRows = useMemo(() => {
-    const byId = new Map<string, BusinessChatConversation>();
-    for (const row of conversations) {
-      byId.set(row.customerId, row);
+    const q = searchQuery.trim().toLowerCase();
+    let rows = directory;
+    if (q) {
+      rows = rows.filter(
+        (row) =>
+          row.name.toLowerCase().includes(q) ||
+          row.phone.includes(q) ||
+          row.roleLabel.toLowerCase().includes(q),
+      );
     }
-
-    const merged = customers.map((customer) => {
-      const existing = byId.get(customer.id);
-      return {
-        customerId: customer.id,
-        customerName: customer.name,
-        customerPhone: customer.phone,
-        lastMessagePreview: existing?.lastMessagePreview ?? "",
-        lastMessageAt: existing?.lastMessageAt ?? null,
-      };
+    return [...rows].sort((a, b) => {
+      const aTime = a.lastMessageAt ? Date.parse(a.lastMessageAt) : 0;
+      const bTime = b.lastMessageAt ? Date.parse(b.lastMessageAt) : 0;
+      if (bTime !== aTime) return bTime - aTime;
+      return a.name.localeCompare(b.name);
     });
+  }, [directory, searchQuery]);
 
-    const q = customerQuery.trim().toLowerCase();
-    if (!q) return merged;
-    return merged.filter(
-      (row) =>
-        row.customerName.toLowerCase().includes(q) ||
-        row.customerPhone.includes(q),
-    );
-  }, [conversations, customers, customerQuery]);
+  const selectedRow = selected
+    ? directory.find((row) => row.kind === selected.kind && row.id === selected.id)
+    : undefined;
 
   async function handleSend(body: string) {
-    if (!selectedCustomerId) return;
+    if (!selected) return;
     setSending(true);
     try {
-      await sendBusinessChatMessage(selectedCustomerId, body);
-      await Promise.all([
-        loadThread(selectedCustomerId),
-        loadConversations(),
-      ]);
+      if (selected.kind === "customer") {
+        await sendBusinessChatMessage(selected.id, body);
+        await Promise.all([
+          loadCustomerThread(selected.id),
+          loadDirectory(),
+        ]);
+      } else {
+        await sendBusinessStaffChatMessage(selected.id, body);
+        await Promise.all([loadStaffThread(selected.id), loadDirectory()]);
+      }
     } finally {
       setSending(false);
     }
   }
 
   async function refreshThread() {
-    if (!selectedCustomerId) return;
-    await Promise.all([
-      loadThread(selectedCustomerId),
-      loadConversations(),
-    ]);
+    if (!selected) return;
+    if (selected.kind === "customer") {
+      await Promise.all([
+        loadCustomerThread(selected.id),
+        loadDirectory(),
+      ]);
+    } else {
+      await Promise.all([loadStaffThread(selected.id), loadDirectory()]);
+    }
   }
 
-  const selectedRow = sidebarRows.find(
-    (row) => row.customerId === selectedCustomerId,
-  );
+  const partnerName =
+    selected?.kind === "customer"
+      ? (customerThread?.customerName ?? selectedRow?.name ?? "Customer")
+      : (staffThread?.staffName ?? selectedRow?.name ?? "Staff");
+
+  const partnerSubtitle =
+    selected?.kind === "customer"
+      ? (customerThread?.customerPhone ?? selectedRow?.phone)
+      : selectedRow
+        ? `${selectedRow.roleLabel} · ${selectedRow.phone}`
+        : undefined;
+
+  const messages =
+    selected?.kind === "customer"
+      ? (customerThread?.messages ?? [])
+      : (staffThread?.messages ?? []);
+
+  const partnerIsTyping =
+    selected?.kind === "customer"
+      ? (customerThread?.partnerIsTyping ?? false)
+      : false;
+
+  const emptyHint =
+    selected?.kind === "staff"
+      ? "Staff receive this as a push alert. They cannot reply in chat yet."
+      : "Say hello — your customer will see this in their portal.";
 
   return (
     <div className="mx-auto max-w-7xl space-y-6">
@@ -163,13 +210,13 @@ export function BusinessMessagesClient() {
           Messages
         </h2>
         <p className="mt-1 text-sm text-muted">
-          Reply to customers in real time about their orders and pickups.
+          Chat with customers and send updates to branch managers and riders.
         </p>
       </div>
 
       <BusinessBulkBroadcastPanel
         onSent={() => {
-          void loadConversations();
+          void loadDirectory();
         }}
       />
 
@@ -179,9 +226,9 @@ export function BusinessMessagesClient() {
             <div className="border-b border-border p-3">
               <input
                 type="search"
-                value={customerQuery}
-                onChange={(e) => setCustomerQuery(e.target.value)}
-                placeholder="Search customers…"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search customers and staff…"
                 className="w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-2 focus:ring-brand/20"
               />
             </div>
@@ -191,28 +238,42 @@ export function BusinessMessagesClient() {
               </p>
             ) : sidebarRows.length === 0 ? (
               <p className="px-4 py-8 text-center text-sm text-muted">
-                Add a customer to start messaging.
+                No contacts match your search.
               </p>
             ) : (
               <ul className="max-h-[min(70vh,640px)] divide-y divide-border overflow-y-auto">
                 {sidebarRows.map((row) => {
-                  const active = row.customerId === selectedCustomerId;
+                  const active =
+                    selected?.kind === row.kind && selected.id === row.id;
                   return (
-                    <li key={row.customerId}>
+                    <li key={`${row.kind}-${row.id}`}>
                       <button
                         type="button"
-                        onClick={() => setSelectedCustomerId(row.customerId)}
+                        onClick={() =>
+                          setSelected({ kind: row.kind, id: row.id })
+                        }
                         className={`w-full px-4 py-3 text-left transition-colors ${
                           active
                             ? "bg-brand-light/40"
                             : "hover:bg-secondary-surface/50"
                         }`}
                       >
-                        <p className="truncate text-sm font-semibold text-foreground">
-                          {row.customerName}
-                        </p>
+                        <div className="flex items-center gap-2">
+                          <p className="min-w-0 flex-1 truncate text-sm font-semibold text-foreground">
+                            {row.name}
+                          </p>
+                          <span
+                            className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${
+                              row.kind === "staff"
+                                ? "bg-secondary-surface text-muted"
+                                : "bg-brand-light/80 text-brand"
+                            }`}
+                          >
+                            {row.roleLabel}
+                          </span>
+                        </div>
                         <p className="truncate text-xs text-muted">
-                          {row.customerPhone}
+                          {row.phone}
                         </p>
                         {row.lastMessagePreview ? (
                           <p className="mt-1 truncate text-xs text-foreground/80">
@@ -238,33 +299,27 @@ export function BusinessMessagesClient() {
         </div>
 
         <div className="lg:col-span-3">
-          {selectedCustomerId ? (
+          {selected ? (
             <ChatThreadPanel
-              partnerName={
-                thread?.customerName ??
-                selectedRow?.customerName ??
-                "Customer"
-              }
-              partnerSubtitle={
-                thread?.customerPhone ?? selectedRow?.customerPhone
-              }
-              messages={thread?.messages ?? []}
-              partnerIsTyping={thread?.partnerIsTyping ?? false}
+              partnerName={partnerName}
+              partnerSubtitle={partnerSubtitle}
+              messages={messages}
+              partnerIsTyping={partnerIsTyping}
               loading={threadLoading}
               error={error}
               sending={sending}
               onSend={handleSend}
               onRefresh={refreshThread}
               onTypingPing={() => {
-                if (selectedCustomerId) {
-                  void pingBusinessTyping(selectedCustomerId);
+                if (selected.kind === "customer") {
+                  void pingBusinessTyping(selected.id);
                 }
               }}
-              emptyHint="Say hello — your customer will see this in their portal."
+              emptyHint={emptyHint}
             />
           ) : (
             <div className="flex h-[min(70vh,640px)] items-center justify-center rounded-2xl border border-dashed border-border bg-secondary-surface/20 px-6 text-center text-sm text-muted">
-              Select a customer to open the conversation.
+              Select a customer or staff member to open the conversation.
             </div>
           )}
         </div>
